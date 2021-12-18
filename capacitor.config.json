@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "tune",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}

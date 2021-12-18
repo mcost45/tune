@@ -1,0 +1,7 @@
+{
+  "name": "tune",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
