@@ -1,0 +1,30 @@
+{
+	"printWidth": 100,
+	"singleQuote": true,
+	"quoteProps": "consistent",
+	"trailingComma": "none",
+	"endOfLine": "auto",
+	"useTabs": true,
+	"tabWidth": 4,
+	"bracketSpacing": true,
+	"overrides": [
+		{
+			"files": "*.html",
+			"options": {
+				"parser": "html"
+			}
+		},
+		{
+			"files": "*.component.html",
+			"options": {
+				"parser": "angular"
+			}
+		},
+		{
+			"files": "*.md",
+			"options": {
+				"tabWidth": 1
+			}
+		}
+	]
+}

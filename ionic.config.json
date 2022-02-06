@@ -1,7 +1,7 @@
 {
-  "name": "tune",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular"
+	"name": "tune",
+	"integrations": {
+		"capacitor": {}
+	},
+	"type": "angular"
 }
