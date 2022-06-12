@@ -55,7 +55,7 @@ export class AuthInitService {
 		return AuthInitService.bufferToBase64Url(hashBuffer);
 	}
 
-	public async initiateAuthentication(): Promise<void> {
+	async initiateAuthentication(): Promise<void> {
 		const { codeVerifier, state, loginUrl } = await this.generateInitAuthProps();
 
 		this.authStorageService.storeInitProps({ codeVerifier, state });
@@ -78,11 +78,13 @@ export class AuthInitService {
 		const redirectUri = `${location.origin}/${authConfig.relRedirectUri}`;
 		this.logger.log(LogLevel.trace, `Will redirect post-login to ${redirectUri}.`);
 
+		const responseType = 'code';
+		const codeChallengeMethod = 'S256';
 		const params: [AuthInitKeys, string][] = [
 			[AuthInitKeys.clientId, authConfig.clientId],
-			[AuthInitKeys.responseType, 'code'],
+			[AuthInitKeys.responseType, responseType],
 			[AuthInitKeys.redirectUri, redirectUri],
-			[AuthInitKeys.codeChallengeMethod, 'S256'],
+			[AuthInitKeys.codeChallengeMethod, codeChallengeMethod],
 			[AuthInitKeys.codeChallenge, codeChallenge],
 			[AuthInitKeys.state, state]
 		];

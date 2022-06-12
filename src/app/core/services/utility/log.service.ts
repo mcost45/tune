@@ -22,7 +22,7 @@ export class LogService {
 		return `[${LogLevel[level]}] ${message}`;
 	}
 
-	public init(): void {
+	init(): void {
 		this.logToLevel = this.configService.config.logLevel;
 
 		this.log(
@@ -31,7 +31,7 @@ export class LogService {
 		);
 	}
 
-	public log(level: LogLevel, message: string): void {
+	log(level: LogLevel, message: string): void {
 		const logLevel = this.logToLevel;
 		if (logLevel && level > logLevel) {
 			return;

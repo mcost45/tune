@@ -5,10 +5,10 @@ import { AccessTokenInitProps } from '../../../domain/authentication/access-toke
 import { AccessTokenInitKeys } from '../../../domain/authentication/access-token-init-keys';
 import { TokenSetProps } from '../../../domain/authentication/token-set-props';
 import { TokenSetKeys } from '../../../domain/authentication/token-set-keys';
-import { AuthStorageService } from './auth-storage.service';
 import { ConfigService } from '../utility/config.service';
 import { AccessTokenRefreshProps } from '../../../domain/authentication/access-token-refresh-props';
 import { AccessTokenRefreshKeys } from '../../../domain/authentication/access-token-refresh-keys';
+import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -49,7 +49,7 @@ export class AccessTokenService {
 		}
 	}
 
-	public async getAccessToken(): Promise<string> {
+	async getAccessToken(): Promise<string> {
 		const storedToken = await this.authStorageService.getStoredAccessToken();
 		if (!storedToken) {
 			throw new Error(AccessTokenService.storedTokenNotFound);
@@ -69,7 +69,7 @@ export class AccessTokenService {
 		return tokenSet[TokenSetKeys.accessToken];
 	}
 
-	public async generateInitialAccessToken(props: AccessTokenInitProps): Promise<string> {
+	async generateInitialAccessToken(props: AccessTokenInitProps): Promise<string> {
 		const tokenUrl = this.configService.config.auth.spotifyTokenUri;
 		const params: Record<AccessTokenInitKeys, string> = {
 			[AccessTokenInitKeys.clientId]: props.clientId,

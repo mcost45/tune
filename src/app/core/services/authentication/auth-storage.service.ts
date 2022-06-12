@@ -19,18 +19,18 @@ export class AuthStorageService {
 
 	constructor(private readonly logger: LogService, private storage: Storage) {}
 
-	public async init(): Promise<void> {
+	async init(): Promise<void> {
 		await this.storage.create();
 	}
 
-	public storeInitProps({ codeVerifier, state }: AuthStorageProps): void {
+	storeInitProps({ codeVerifier, state }: AuthStorageProps): void {
 		sessionStorage.setItem('codeVerifier', codeVerifier);
 		sessionStorage.setItem('state', state);
 
 		this.logger.log(LogLevel.trace, 'Auth init props stored.');
 	}
 
-	public getStoredInitProps(): AuthStorageProps {
+	getStoredInitProps(): AuthStorageProps {
 		const codeVerifier = sessionStorage.getItem('codeVerifier');
 		const state = sessionStorage.getItem('state');
 
@@ -44,7 +44,7 @@ export class AuthStorageService {
 		return { codeVerifier, state };
 	}
 
-	public async storeAccessTokenSet(body: TokenSetProps, expiresAt: number): Promise<void> {
+	async storeAccessTokenSet(body: TokenSetProps, expiresAt: number): Promise<void> {
 		await this.storage.set(
 			AuthStorageService.accessTokenSetKey,
 			JSON.stringify({ ...body, expiresAt })
@@ -52,26 +52,26 @@ export class AuthStorageService {
 		this.logger.log(LogLevel.trace, 'New tokenSet stored.');
 	}
 
-	public async removeAccessTokenSet(): Promise<void> {
+	async removeAccessTokenSet(): Promise<void> {
 		await this.storage.remove(AuthStorageService.accessTokenSetKey);
 		this.logger.log(LogLevel.trace, 'TokenSet storage removed.');
 	}
 
-	public async getStoredAccessToken(): Promise<string | null> {
+	async getStoredAccessToken(): Promise<string | null> {
 		return await this.storage.get(AuthStorageService.accessTokenSetKey);
 	}
 
-	public async storeUser(user: SpotifyApi.CurrentUsersProfileResponse): Promise<void> {
+	async storeUser(user: SpotifyApi.CurrentUsersProfileResponse): Promise<void> {
 		await this.storage.set(AuthStorageService.userKey, JSON.stringify(user));
 		this.logger.log(LogLevel.trace, 'New user stored.');
 	}
 
-	public async removeUser(): Promise<void> {
+	async removeUser(): Promise<void> {
 		await this.storage.remove(AuthStorageService.userKey);
 		this.logger.log(LogLevel.trace, 'User storage removed.');
 	}
 
-	public async getUser(): Promise<string | null> {
+	async getUser(): Promise<string | null> {
 		return await this.storage.get(AuthStorageService.userKey);
 	}
 }

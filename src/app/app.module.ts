@@ -4,13 +4,15 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { IonicStorageModule } from '@ionic/storage-angular';
-import { AppComponent } from './app.component';
-import { AppRoutingModule } from './routing/app-routing.module';
-import { SharedModule } from './shared/shared.module';
-import { CoreModule } from './core/core.module';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
+import { CoreModule } from './core/core.module';
+import { SharedModule } from './shared/shared.module';
+import { AppRoutingModule } from './routing/app-routing.module';
+import { AppComponent } from './app.component';
 
 const ii8nDefaultLanguage = 'en';
 const ii8nLoadPrefix = './assets/ii8n/';
@@ -46,7 +48,13 @@ const appFactory = (translateService: TranslateService) => {
 		CoreModule,
 		SharedModule,
 		BrowserModule,
-		AppRoutingModule
+		AppRoutingModule,
+		ServiceWorkerModule.register('ngsw-worker.js', {
+			enabled: environment.production,
+			// Register the ServiceWorker as soon as the application is stable
+			// or after 30 seconds (whichever comes first).
+			registrationStrategy: 'registerWhenStable:30000'
+		})
 	],
 	providers: [
 		{

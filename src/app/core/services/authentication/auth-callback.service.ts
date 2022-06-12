@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AuthCallbackProps } from '../../../domain/authentication/auth-callback-props';
-import { AuthStorageService } from './auth-storage.service';
 import { LogService } from '../utility/log.service';
-import { LogLevel } from '../../../domain/utility/log-level';
 import { ConfigService } from '../utility/config.service';
-import { AccessTokenService } from './access-token.service';
 import { LoginService } from '../login.service';
+import { LogLevel } from '../../../domain/utility/log-level';
+import { AccessTokenService } from './access-token.service';
+import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -43,27 +43,50 @@ export class AuthCallbackService {
 		}
 	}
 
-	public async handleAuthResponse(params: URLSearchParams): Promise<void> {
+	async handleAuthResponse(params: URLSearchParams): Promise<void> {
 		const error = params.get('error');
 		const state = params.get('state');
 		const code = params.get('code');
 
-		const { state: storedState, codeVerifier: storedCodeVerifier } =
-			this.authStorageService.getStoredInitProps();
+		let storedCodeVerifier: string;
 
 		try {
-			AuthCallbackService.checkForErrors({ error, state, code }, storedState);
+			const stored = this.validatePrerequisites({
+				error,
+				state,
+				code
+			});
+			storedCodeVerifier = stored.codeVerifier;
 		} catch (e) {
 			return await this.loginService.onFailedLogin(error || '');
 		}
 
-		this.logger.log(LogLevel.trace, 'Successfully authenticated user.');
+		await this.beginLogin(code as string, storedCodeVerifier);
+	}
 
+	private validatePrerequisites(params: {
+		error: string | null;
+		state: string | null;
+		code: string | null;
+	}): {
+		state: string;
+		codeVerifier: string;
+	} {
+		const { state, codeVerifier } = this.authStorageService.getStoredInitProps();
+
+		AuthCallbackService.checkForErrors(params, state);
+
+		this.logger.log(LogLevel.trace, 'Successfully authenticated user.');
+		return { state, codeVerifier };
+	}
+
+	private async beginLogin(code: string, codeVerifier: string): Promise<void> {
 		const authConfig = this.configService.config.auth;
+
 		await this.accessTokenService.generateInitialAccessToken({
 			clientId: authConfig.clientId,
-			code: code as string,
-			codeVerifier: storedCodeVerifier,
+			code,
+			codeVerifier,
 			grantType: 'authorization_code',
 			redirectUri: `${location.origin}/${authConfig.relRedirectUri}`
 		});

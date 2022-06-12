@@ -5,4 +5,7 @@ export interface AuthConfig {
 	spotifyTokenUri: string;
 	scope: string;
 	codeLen: number;
+	postSuccessRoute: string;
+	postFailedRoute: string;
+	postLogoutRoute: string;
 }

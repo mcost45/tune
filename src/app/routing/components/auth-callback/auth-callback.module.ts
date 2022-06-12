@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
-import { AuthCallbackComponent } from './auth-callback.component';
 import { SharedModule } from '../../../shared/shared.module';
+import { AuthCallbackComponent } from './auth-callback.component';
 import { AuthCallbackRoutingModule } from './auth-callback-routing.module';
 
 @NgModule({

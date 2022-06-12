@@ -1,5 +1,11 @@
 {
 	"APP": {
-		"TITLE": "Tune"
+		"TITLE": "Tune",
+		"LOGIN_FAILED": "Login failed!",
+		"PAGE_NOT_FOUND": "Page not found!"
+	},
+	"ACTIONS": {
+		"LOGIN": "Login",
+		"LOGOUT": "Logout"
 	}
 }

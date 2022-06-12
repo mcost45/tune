@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { LogService } from './utility/log.service';
+import { BehaviorSubject, filter, map, Observable } from 'rxjs';
 import { LogLevel } from '../../domain/utility/log-level';
+import { LogService } from './utility/log.service';
 import { AuthInitService } from './authentication/auth-init.service';
 import { AccessTokenService } from './authentication/access-token.service';
 import { AuthStorageService } from './authentication/auth-storage.service';
@@ -23,31 +23,45 @@ export class UserService {
 		private readonly authStorageService: AuthStorageService
 	) {}
 
-	public async init(): Promise<void> {
+	async init(): Promise<void> {
 		const user = await this.authStorageService.getUser();
 		if (user) {
 			this.userSubject.next(JSON.parse(user));
 		}
 	}
 
-	public async setUser(user: SpotifyApi.CurrentUsersProfileResponse): Promise<void> {
+	async setUser(user: SpotifyApi.CurrentUsersProfileResponse): Promise<void> {
 		await this.authStorageService.storeUser(user);
 		this.userSubject.next(user);
 		this.logger.log(LogLevel.trace, `User '${user.display_name}' set.`);
 	}
 
-	public async removeUser(): Promise<void> {
+	async removeUser(): Promise<void> {
 		await this.authStorageService.removeUser();
 		await this.authStorageService.removeAccessTokenSet();
 		this.userSubject.next(null);
 		this.logger.log(LogLevel.trace, `User removed.`);
 	}
 
-	public getUser$(): Observable<SpotifyApi.CurrentUsersProfileResponse | null> {
+	getUser$(): Observable<SpotifyApi.CurrentUsersProfileResponse | null> {
 		return this.user$;
 	}
 
-	public async withToken<T>(callback: (token: string) => T): Promise<T> {
+	getImageUrl$(): Observable<string | null> {
+		return this.user$.pipe(
+			filter((user) => !!user),
+			map((user) => {
+				const images = (user as SpotifyApi.CurrentUsersProfileResponse).images;
+				const len = images?.length;
+				if (len) {
+					return images[0].url;
+				}
+				return null;
+			})
+		);
+	}
+
+	async withToken<T>(callback: (token: string) => T): Promise<T> {
 		return callback(await this.accessTokenService.getAccessToken());
 	}
 }

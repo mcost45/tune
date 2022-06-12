@@ -1,5 +1,13 @@
 <ion-header [translucent]="true">
 	<ion-toolbar>
-		<ion-title>{{ titleKey | translate }}</ion-title>
+		<ion-buttons slot="start">
+			<ion-button size="large" shape="round">test</ion-button>
+		</ion-buttons>
+
+		<ion-buttons slot="end"
+			><app-profile-button [user$]="user$" [imageUrl$]="imageUrl$"></app-profile-button
+		></ion-buttons>
+
+		<ion-title slot="start" size="large">{{ titleKey | translate }}</ion-title>
 	</ion-toolbar>
 </ion-header>

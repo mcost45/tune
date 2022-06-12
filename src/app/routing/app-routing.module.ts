@@ -24,7 +24,8 @@ const routes: Routes = [
 		path: 'feed',
 		loadChildren: () =>
 			import('./components/pages/feed/feed.module').then((m) => m.FeedPageModule),
-		canActivate: [LoggedInActivateGuard]
+		canActivate: [LoggedInActivateGuard],
+		runGuardsAndResolvers: 'always'
 	},
 	{
 		path: 'login-failed',
@@ -32,11 +33,23 @@ const routes: Routes = [
 			import('./components/pages/login-failed/login-failed.module').then(
 				(m) => m.LoginFailedPageModule
 			)
+	},
+	{
+		path: '**',
+		loadChildren: () =>
+			import('./components/pages/not-found/not-found.module').then(
+				(m) => m.NotFoundPageModule
+			)
 	}
 ];
 
 @NgModule({
-	imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],
+	imports: [
+		RouterModule.forRoot(routes, {
+			preloadingStrategy: PreloadAllModules,
+			onSameUrlNavigation: 'reload'
+		})
+	],
 	exports: [RouterModule]
 })
 export class AppRoutingModule {}

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import SpotifyWebApi from 'spotify-web-api-js';
+import { LogLevel } from '../../domain/utility/log-level';
 import { UserService } from './user.service';
 import { LogService } from './utility/log.service';
-import { LogLevel } from '../../domain/utility/log-level';
 
 @Injectable({
 	providedIn: 'root'
@@ -13,7 +13,7 @@ export class SpotifyService {
 
 	constructor(private readonly logger: LogService, private readonly userService: UserService) {}
 
-	public async getCurrentUser(): Promise<SpotifyApi.CurrentUsersProfileResponse> {
+	async getCurrentUser(): Promise<SpotifyApi.CurrentUsersProfileResponse> {
 		this.logger.log(LogLevel.trace, 'Fetching current user.');
 		await this.ensureValidToken();
 		return await this.api.getMe();

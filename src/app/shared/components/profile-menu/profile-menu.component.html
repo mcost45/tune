@@ -1,0 +1,6 @@
+<ion-item>
+	<ion-label class="name">{{ user?.display_name }}</ion-label>
+</ion-item>
+<ion-item [button]="true" (click)="onLogout()">
+	<ion-label>{{ 'ACTIONS.LOGOUT' | translate }}</ion-label>
+</ion-item>

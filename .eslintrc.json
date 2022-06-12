@@ -47,6 +47,7 @@
 					}
 				],
 				"prettier/prettier": "error",
+				"import/order": "error",
 				"deprecation/deprecation": "warn"
 			}
 		},

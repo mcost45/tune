@@ -1,0 +1,35 @@
+<ng-container *ngIf="{ user: user$ | async } as context">
+	<ng-container *ngIf="context.user; then loggedInButton; else loggedOutButton"></ng-container>
+
+	<ion-popover
+		trigger="profile-button"
+		reference="trigger"
+		[isOpen]="menuOpen"
+		(ionPopoverDidDismiss)="onDismissMenu()"
+		(ionPopoverDidPresent)="onOpenMenu()"
+	>
+		<ng-template>
+			<app-profile-menu [user]="context.user"></app-profile-menu>
+		</ng-template>
+	</ion-popover>
+</ng-container>
+
+<ng-template #loggedInButton>
+	<ion-button
+		*ngIf="{ imageUrl: imageUrl$ | async | cssUrl } as context"
+		id="profile-button"
+		class="profile-button"
+		size="large"
+		shape="round"
+		fill="outline"
+		[ngStyle]="context.imageUrl && { backgroundImage: context.imageUrl }"
+	></ion-button>
+</ng-template>
+
+<ng-template #loggedOutButton>
+	<ion-button size="large" shape="round" fill="outline" (click)="onLogin()">
+		{{ 'ACTIONS.LOGIN' | translate }}
+	</ion-button>
+</ng-template>
+
+<ng-template #menu></ng-template>
