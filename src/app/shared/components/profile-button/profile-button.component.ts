@@ -16,15 +16,15 @@ export class ProfileButtonComponent {
 
 	constructor(private readonly loginService: LoginService) {}
 
-	toggleMenu(): void {
+	toggleMenu() {
 		this.menuOpen = !this.menuOpen;
 	}
 
-	onDismissMenu(): void {
+	onDismissMenu() {
 		this.menuOpen = false;
 	}
 
-	onOpenMenu(): void {
+	onOpenMenu() {
 		this.menuOpen = true;
 	}
 

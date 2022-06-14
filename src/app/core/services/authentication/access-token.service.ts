@@ -14,15 +14,13 @@ import { AuthStorageService } from './auth-storage.service';
 	providedIn: 'root'
 })
 export class AccessTokenService {
-	private static responseNotOk = 'Access token response was not ok.';
+	private static readonly responseNotOk = 'Access token response was not ok.';
+	private static readonly missingAccessToken = 'No access token returned.';
+	private static readonly missingExpirationTime = 'No expiration time returned.';
+	private static readonly missingRefreshToken = 'No refresh token returned.';
+	private static readonly storedTokenNotFound = 'Could not find a stored access token.';
 
-	private static missingAccessToken = 'No access token returned.';
-
-	private static missingExpirationTime = 'No expiration time returned.';
-
-	private static missingRefreshToken = 'No refresh token returned.';
-
-	private static storedTokenNotFound = 'Could not find a stored access token.';
+	private static readonly refreshTokenWithinExpirationMs = 10000;
 
 	constructor(
 		private readonly logger: LogService,
@@ -30,11 +28,11 @@ export class AccessTokenService {
 		private readonly authStorageService: AuthStorageService
 	) {}
 
-	private static throwResponseError(message: string, body: TokenSetProps): void {
+	private static throwResponseError(message: string, body: TokenSetProps) {
 		throw new Error(`${message}\nbody: ${JSON.stringify(body)}`);
 	}
 
-	private static checkResponseForErrors(response: Response, body: TokenSetProps): void {
+	private static checkResponseForErrors(response: Response, body: TokenSetProps) {
 		if (!response.ok) {
 			AccessTokenService.throwResponseError(AccessTokenService.responseNotOk, body);
 		}
@@ -56,7 +54,7 @@ export class AccessTokenService {
 		}
 
 		const tokenSet: TokenSetProps = JSON.parse(storedToken);
-		if (tokenSet[TokenSetKeys.expiresAt] < Date.now()) {
+		if (this.shouldRefreshToken(tokenSet)) {
 			this.logger.log(LogLevel.trace, 'Current token has expired.');
 
 			await this.generateRefreshToken({
@@ -80,6 +78,13 @@ export class AccessTokenService {
 		};
 
 		return this.generateAccessToken(tokenUrl, params);
+	}
+
+	private shouldRefreshToken(tokenSet: TokenSetProps): boolean {
+		return (
+			tokenSet[TokenSetKeys.expiresAt] <
+			Date.now() - AccessTokenService.refreshTokenWithinExpirationMs
+		);
 	}
 
 	private async generateRefreshToken(props: AccessTokenRefreshProps): Promise<string> {

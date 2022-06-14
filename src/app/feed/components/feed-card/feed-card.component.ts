@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
-	selector: 'app-card',
-	templateUrl: './card.component.html',
-	styleUrls: ['./card.component.scss'],
+	selector: 'app-feed-card',
+	templateUrl: './feed-card.component.html',
+	styleUrls: ['./feed-card.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CardComponent {
+export class FeedCardComponent {
 	constructor() {}
 }

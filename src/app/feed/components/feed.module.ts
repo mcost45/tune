@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../../shared/shared.module';
-import { ListComponent } from './list/list.component';
-import { CardComponent } from './card/card.component';
+import { FeedListComponent } from './feed-list/feed-list.component';
+import { FeedCardComponent } from './feed-card/feed-card.component';
 
 @NgModule({
 	imports: [SharedModule],
-	declarations: [ListComponent, CardComponent],
-	exports: [ListComponent, CardComponent]
+	declarations: [FeedListComponent, FeedCardComponent],
+	exports: [FeedListComponent]
 })
 export class FeedModule {}

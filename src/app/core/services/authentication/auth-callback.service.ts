@@ -25,10 +25,7 @@ export class AuthCallbackService {
 		private readonly loginService: LoginService
 	) {}
 
-	private static checkForErrors(
-		{ error, state, code }: AuthCallbackProps,
-		storedState: string
-	): void {
+	private static checkForErrors({ error, state, code }: AuthCallbackProps, storedState: string) {
 		if (error) {
 			throw new Error(error);
 		}

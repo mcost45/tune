@@ -40,7 +40,7 @@ export class LoginService {
 	}
 
 	async onCompletedLogin(): Promise<void> {
-		const user = await this.spotifyService.getCurrentUser();
+		const user = await this.spotifyService.getUser();
 		if (user) {
 			await this.userService.setUser(user);
 			this.logger.log(LogLevel.trace, 'Completed login.');

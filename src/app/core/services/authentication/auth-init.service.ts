@@ -64,7 +64,9 @@ export class AuthInitService {
 
 	private async generateInitAuthProps(): Promise<AuthInitProps> {
 		const authConfig = this.configService.config.auth;
-		const { codeLen } = authConfig;
+		const { codeLen, scope } = authConfig;
+		const responseType = 'code';
+		const codeChallengeMethod = 'S256';
 
 		this.logger.log(
 			LogLevel.trace,
@@ -78,15 +80,14 @@ export class AuthInitService {
 		const redirectUri = `${location.origin}/${authConfig.relRedirectUri}`;
 		this.logger.log(LogLevel.trace, `Will redirect post-login to ${redirectUri}.`);
 
-		const responseType = 'code';
-		const codeChallengeMethod = 'S256';
 		const params: [AuthInitKeys, string][] = [
 			[AuthInitKeys.clientId, authConfig.clientId],
 			[AuthInitKeys.responseType, responseType],
 			[AuthInitKeys.redirectUri, redirectUri],
 			[AuthInitKeys.codeChallengeMethod, codeChallengeMethod],
 			[AuthInitKeys.codeChallenge, codeChallenge],
-			[AuthInitKeys.state, state]
+			[AuthInitKeys.state, state],
+			[AuthInitKeys.scope, scope]
 		];
 
 		const urlParams = new URLSearchParams(params);

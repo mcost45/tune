@@ -1,4 +1,4 @@
-export enum AccessTokenInitKeys {
+export const enum AccessTokenInitKeys {
 	clientId = 'client_id',
 	grantType = 'grant_type',
 	code = 'code',

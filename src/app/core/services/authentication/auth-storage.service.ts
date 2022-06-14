@@ -4,24 +4,19 @@ import { AuthStorageProps } from '../../../domain/authentication/auth-storage-pr
 import { LogService } from '../utility/log.service';
 import { LogLevel } from '../../../domain/utility/log-level';
 import { TokenSetProps } from '../../../domain/authentication/token-set-props';
+import { TokenSetKeys } from '../../../domain/authentication/token-set-keys';
 
 @Injectable({
 	providedIn: 'root'
 })
 export class AuthStorageService {
 	private static missingCodeVerifierProp = 'Could not find stored codeVerifier.';
-
 	private static missingStateProp = 'Could not find stored state.';
 
-	private static accessTokenSetKey = 'tokenSet';
+	private static accessTokenSetKey = 'auth-tokenSet';
+	private static userKey = 'auth-user';
 
-	private static userKey = 'user';
-
-	constructor(private readonly logger: LogService, private storage: Storage) {}
-
-	async init(): Promise<void> {
-		await this.storage.create();
-	}
+	constructor(private readonly logger: LogService, private readonly storage: Storage) {}
 
 	storeInitProps({ codeVerifier, state }: AuthStorageProps): void {
 		sessionStorage.setItem('codeVerifier', codeVerifier);
@@ -47,7 +42,7 @@ export class AuthStorageService {
 	async storeAccessTokenSet(body: TokenSetProps, expiresAt: number): Promise<void> {
 		await this.storage.set(
 			AuthStorageService.accessTokenSetKey,
-			JSON.stringify({ ...body, expiresAt })
+			JSON.stringify({ ...body, [TokenSetKeys.expiresAt]: expiresAt })
 		);
 		this.logger.log(LogLevel.trace, 'New tokenSet stored.');
 	}
