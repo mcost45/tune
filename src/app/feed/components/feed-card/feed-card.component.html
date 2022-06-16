@@ -1,1 +1,8 @@
-{{ track?.preview_url }}
+<ng-container *ngIf="track">
+	<br />
+	{{ track.name }}<br />
+	<div *ngFor="let artist of track.artists">
+		{{ artist.name }}
+	</div>
+	{{ track.preview_url }}
+</ng-container>

@@ -57,7 +57,7 @@ export class AccessTokenService {
 		if (this.shouldRefreshToken(tokenSet)) {
 			this.logger.log(LogLevel.trace, 'Current token has expired.');
 
-			await this.generateRefreshToken({
+			return this.generateRefreshToken({
 				clientId: this.configService.config.auth.clientId,
 				grantType: 'refresh_token',
 				refreshToken: tokenSet[TokenSetKeys.refreshToken]

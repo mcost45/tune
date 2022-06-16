@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
-import { filter, ReplaySubject, takeUntil } from 'rxjs';
+import { BehaviorSubject, filter, Observable, ReplaySubject, takeUntil } from 'rxjs';
 import { FeedService } from '../../services/feed.service';
 import { FeedSeedService } from '../../services/feed-seed.service';
 import { LogService } from '../../../core/services/utility/log.service';
@@ -16,12 +16,15 @@ import TrackObjectSimplified = SpotifyApi.TrackObjectSimplified;
 export class FeedListComponent implements OnInit, OnDestroy {
 	private static readonly elementCount = 6;
 
-	activeTracks: SpotifyApi.TrackObjectSimplified[] = [];
-	cardQueue: SpotifyApi.TrackObjectSimplified[] = [];
+	activeTracks$: Observable<SpotifyApi.TrackObjectSimplified[]>;
+
+	private readonly activeTracksS = new BehaviorSubject<SpotifyApi.TrackObjectSimplified[]>([]);
 
 	private readonly destroyedS = new ReplaySubject(1);
 
-	constructor(private readonly logger: LogService, private readonly feedService: FeedService) {}
+	constructor(private readonly logger: LogService, private readonly feedService: FeedService) {
+		this.activeTracks$ = this.activeTracksS.asObservable();
+	}
 
 	ngOnInit() {
 		this.feedService.isInitiated$
@@ -35,7 +38,7 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 		this.feedService.recommendedTracks$
 			.pipe(takeUntil(this.destroyedS))
-			.subscribe((tracks) => console.log('TRACKS', tracks));
+			.subscribe((tracks) => this.activeTracksS.next(tracks));
 
 		this.feedService.init();
 	}
@@ -52,5 +55,9 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 	onDislikeTrack(track: TrackObjectSimplified) {
 		this.logger.log(LogLevel.trace, `Disliked track '${track.name}'`);
+	}
+
+	trackBy(index: number, item: SpotifyApi.TrackObjectSimplified): string {
+		return item.id;
 	}
 }

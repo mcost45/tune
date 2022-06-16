@@ -33,18 +33,17 @@ export class SpotifyService {
 
 	async getRecommendations(
 		amount: number,
-		seedArtistIds: string[] = [],
-		seedTrackIds: string[] = []
+		seedTrackIds: string[] = [],
+		seedArtistIds: string[] = []
 	): Promise<SpotifyApi.RecommendationsFromSeedsResponse | undefined> {
 		this.logger.log(LogLevel.trace, `Fetching ${amount} recommendations.`);
 		this.checkRecommendationsRequestSeeds(seedArtistIds, seedTrackIds);
 
 		const market = await this.getUserMarket();
 		const options: SpotifyApi.RecommendationsOptionsObject = {
-			[SpotifyCallKeys.limit]: amount,
 			[SpotifyCallKeys.seedArtists]: seedArtistIds,
 			[SpotifyCallKeys.seedTracks]: seedTrackIds,
-			[SpotifyCallKeys.seedGenres]: [],
+			[SpotifyCallKeys.limit]: amount,
 			[SpotifyCallKeys.market]: market
 		};
 
@@ -64,6 +63,20 @@ export class SpotifyService {
 	likeTracks(trackIds: string[]): Promise<SpotifyApi.SaveTracksForUserResponse | undefined> {
 		this.logger.log(LogLevel.trace, `Liking ${trackIds.length} track.`);
 		return this.tryAPICall(() => this.api.addToMySavedTracks(trackIds));
+	}
+
+	async getDetailedTracks(
+		trackIds: string[]
+	): Promise<SpotifyApi.MultipleTracksResponse | undefined> {
+		this.logger.log(LogLevel.trace, `Fetching ${trackIds.length} tracks.`);
+		return this.tryAPICall(() => this.api.getTracks(trackIds));
+	}
+
+	async getDetailedArtists(
+		artistIds: string[]
+	): Promise<SpotifyApi.MultipleArtistsResponse | undefined> {
+		this.logger.log(LogLevel.trace, `Fetching ${artistIds.length} artists.`);
+		return this.tryAPICall(() => this.api.getArtists(artistIds));
 	}
 
 	private tryAPICall<T>(
