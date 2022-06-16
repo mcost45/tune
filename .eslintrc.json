@@ -24,6 +24,7 @@
 				"plugin:prettier/recommended"
 			],
 			"rules": {
+				"no-return-await": "error",
 				"@angular-eslint/component-class-suffix": [
 					"error",
 					{

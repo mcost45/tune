@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
 	selector: 'app-feed-card',
@@ -7,5 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeedCardComponent {
+	@Input() track?: SpotifyApi.TrackObjectSimplified;
+
 	constructor() {}
 }

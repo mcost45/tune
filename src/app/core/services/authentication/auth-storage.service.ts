@@ -5,6 +5,7 @@ import { LogService } from '../utility/log.service';
 import { LogLevel } from '../../../domain/utility/log-level';
 import { TokenSetProps } from '../../../domain/authentication/token-set-props';
 import { TokenSetKeys } from '../../../domain/authentication/token-set-keys';
+import { waitParallel } from '../../../utility/wait-parallel';
 
 @Injectable({
 	providedIn: 'root'
@@ -47,11 +48,6 @@ export class AuthStorageService {
 		this.logger.log(LogLevel.trace, 'New tokenSet stored.');
 	}
 
-	async removeAccessTokenSet(): Promise<void> {
-		await this.storage.remove(AuthStorageService.accessTokenSetKey);
-		this.logger.log(LogLevel.trace, 'TokenSet storage removed.');
-	}
-
 	getStoredAccessToken(): Promise<string | undefined> {
 		return this.storage.get(AuthStorageService.accessTokenSetKey);
 	}
@@ -61,12 +57,21 @@ export class AuthStorageService {
 		this.logger.log(LogLevel.trace, 'New user stored.');
 	}
 
-	async removeUser(): Promise<void> {
-		await this.storage.remove(AuthStorageService.userKey);
-		this.logger.log(LogLevel.trace, 'User storage removed.');
-	}
-
 	getUser(): Promise<string | undefined> {
 		return this.storage.get(AuthStorageService.userKey);
+	}
+
+	async removeAll(): Promise<[void, void]> {
+		return waitParallel(this.removeUser(), this.removeAccessTokenSet());
+	}
+
+	async removeAccessTokenSet(): Promise<void> {
+		await this.storage.remove(AuthStorageService.accessTokenSetKey);
+		this.logger.log(LogLevel.trace, 'TokenSet storage removed.');
+	}
+
+	private async removeUser(): Promise<void> {
+		await this.storage.remove(AuthStorageService.userKey);
+		this.logger.log(LogLevel.trace, 'User storage removed.');
 	}
 }

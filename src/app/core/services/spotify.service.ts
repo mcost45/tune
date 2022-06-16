@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import SpotifyWebApi from 'spotify-web-api-js';
+import { firstValueFrom, Observable } from 'rxjs';
 import { LogLevel } from '../../domain/utility/log-level';
-import { waitTime } from '../utility/wait-time';
-import { SpotifyCallKeys } from '../../domain/authentication/spotify-call-keys';
+import { waitTime } from '../../utility/wait-time';
+import { SpotifyCallKeys } from '../../feed/domain/spotify-call-keys';
 import { UserService } from './user.service';
 import { LogService } from './utility/log.service';
 
@@ -16,32 +17,38 @@ export class SpotifyService {
 	private static readonly recommendationRequestHasTooManySeeds =
 		'Recommendation request has too many seeds.';
 
-	private static readonly retryOnErrorMs = 2000;
+	private static readonly retryOnErrorMs = 5000;
 
 	private readonly api = new SpotifyWebApi();
+	private readonly user$: Observable<SpotifyApi.CurrentUsersProfileResponse | null>;
 
-	constructor(private readonly logger: LogService, private readonly userService: UserService) {}
+	constructor(private readonly logger: LogService, private readonly userService: UserService) {
+		this.user$ = this.userService.getUser$();
+	}
 
 	getUser(): Promise<SpotifyApi.CurrentUsersProfileResponse | undefined> {
 		this.logger.log(LogLevel.trace, 'Fetching current user.');
 		return this.tryAPICall(() => this.api.getMe());
 	}
 
-	getRecommendations(
+	async getRecommendations(
 		amount: number,
 		seedArtistIds: string[] = [],
-		seedTrackIds: string[] = [],
-		seedGenres: string[] = []
+		seedTrackIds: string[] = []
 	): Promise<SpotifyApi.RecommendationsFromSeedsResponse | undefined> {
 		this.logger.log(LogLevel.trace, `Fetching ${amount} recommendations.`);
-		this.checkRecommendationsRequestSeeds(seedArtistIds, seedTrackIds, seedGenres);
-		return this.tryAPICall(() =>
-			this.api.getRecommendations({
-				[SpotifyCallKeys.seedArtists]: seedArtistIds,
-				[SpotifyCallKeys.seedTracks]: seedTrackIds,
-				[SpotifyCallKeys.seedGenres]: seedGenres
-			})
-		);
+		this.checkRecommendationsRequestSeeds(seedArtistIds, seedTrackIds);
+
+		const market = await this.getUserMarket();
+		const options: SpotifyApi.RecommendationsOptionsObject = {
+			[SpotifyCallKeys.limit]: amount,
+			[SpotifyCallKeys.seedArtists]: seedArtistIds,
+			[SpotifyCallKeys.seedTracks]: seedTrackIds,
+			[SpotifyCallKeys.seedGenres]: [],
+			[SpotifyCallKeys.market]: market
+		};
+
+		return this.tryAPICall(() => this.api.getRecommendations(options));
 	}
 
 	getTopTracks(amount: number): Promise<SpotifyApi.UsersTopTracksResponse | undefined> {
@@ -77,6 +84,11 @@ export class SpotifyService {
 				}
 			)
 		);
+	}
+
+	private async getUserMarket(): Promise<string> {
+		const user = await firstValueFrom(this.user$);
+		return (user as SpotifyApi.CurrentUsersProfileResponse).country;
 	}
 
 	private ensureValidToken(): Promise<void> {

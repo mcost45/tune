@@ -1,1 +1,3 @@
-<ng-container *ngFor="let card of activeCards"><app-feed-card></app-feed-card></ng-container>
+<ng-container *ngFor="let track of activeTracks"
+	><app-feed-card [track]="track"></app-feed-card
+></ng-container>

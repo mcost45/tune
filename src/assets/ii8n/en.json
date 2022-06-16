@@ -1,8 +1,15 @@
 {
 	"APP": {
 		"TITLE": "Tune",
-		"LOGIN_FAILED": "Login failed!",
-		"PAGE_NOT_FOUND": "Page not found!"
+		"SUBTITLES": {
+			"HOME": "Home",
+			"AUTHORISATION": "Authorising",
+			"FEED": "Feed",
+			"LOGIN_FAILED": "Login Failed",
+			"PAGE_NOT_FOUND": "Page Not Found"
+		},
+		"LOGIN_FAILED_MSG": "Login failed!",
+		"PAGE_NOT_FOUND_MSG": "Page not found!"
 	},
 	"ACTIONS": {
 		"LOGIN": "Login",
