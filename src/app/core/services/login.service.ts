@@ -44,7 +44,7 @@ export class LoginService {
 		if (user) {
 			await this.userService.setUser(user);
 			this.logger.log(LogLevel.trace, 'Completed login.');
-			return await this.redirectToSuccessPage();
+			return this.redirectToSuccessPage();
 		}
 
 		throw new Error(LoginService.noUser);

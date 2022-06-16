@@ -55,7 +55,7 @@ export class AuthCallbackService {
 			});
 			storedCodeVerifier = stored.codeVerifier;
 		} catch (e) {
-			return await this.loginService.onFailedLogin(error || '');
+			return this.loginService.onFailedLogin(error || '');
 		}
 
 		await this.beginLogin(code as string, storedCodeVerifier);

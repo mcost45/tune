@@ -10,7 +10,7 @@ import { LoginService } from '../../../core/services/login.service';
 })
 export class ProfileButtonComponent {
 	@Input() user$?: Observable<SpotifyApi.CurrentUsersProfileResponse | null>;
-	@Input() imageUrl$?: Observable<string>;
+	@Input() imageUrl$?: Observable<string | null>;
 
 	menuOpen = false;
 

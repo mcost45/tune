@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 	name: 'cssUrl'
 })
 export class CssUrlPipe implements PipeTransform {
-	transform(value?: string): string | undefined {
+	transform(value?: string | null): string | undefined {
 		if (!value) {
 			return;
 		}

@@ -5,14 +5,15 @@ import { LogService } from './services/utility/log.service';
 import { AuthStorageService } from './services/authentication/auth-storage.service';
 import { UserService } from './services/user.service';
 
-const coreFactory = (
-	configService: ConfigService,
-	logService: LogService,
-	storage: Storage,
-	authStorageService: AuthStorageService,
-	userService: UserService
-) => {
-	return () =>
+const coreFactory =
+	(
+		configService: ConfigService,
+		logService: LogService,
+		storage: Storage,
+		authStorageService: AuthStorageService,
+		userService: UserService
+	) =>
+	() =>
 		new Promise<void>((resolve) => {
 			configService.loadConfig().subscribe(async () => {
 				logService.init();
@@ -22,7 +23,6 @@ const coreFactory = (
 				resolve();
 			});
 		});
-};
 
 @NgModule({
 	providers: [

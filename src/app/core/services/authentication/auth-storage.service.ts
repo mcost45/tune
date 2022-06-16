@@ -18,7 +18,7 @@ export class AuthStorageService {
 
 	constructor(private readonly logger: LogService, private readonly storage: Storage) {}
 
-	storeInitProps({ codeVerifier, state }: AuthStorageProps): void {
+	storeInitProps({ codeVerifier, state }: AuthStorageProps) {
 		sessionStorage.setItem('codeVerifier', codeVerifier);
 		sessionStorage.setItem('state', state);
 
@@ -52,8 +52,8 @@ export class AuthStorageService {
 		this.logger.log(LogLevel.trace, 'TokenSet storage removed.');
 	}
 
-	async getStoredAccessToken(): Promise<string | null> {
-		return await this.storage.get(AuthStorageService.accessTokenSetKey);
+	getStoredAccessToken(): Promise<string | undefined> {
+		return this.storage.get(AuthStorageService.accessTokenSetKey);
 	}
 
 	async storeUser(user: SpotifyApi.CurrentUsersProfileResponse): Promise<void> {
@@ -66,7 +66,7 @@ export class AuthStorageService {
 		this.logger.log(LogLevel.trace, 'User storage removed.');
 	}
 
-	async getUser(): Promise<string | null> {
-		return await this.storage.get(AuthStorageService.userKey);
+	getUser(): Promise<string | undefined> {
+		return this.storage.get(AuthStorageService.userKey);
 	}
 }

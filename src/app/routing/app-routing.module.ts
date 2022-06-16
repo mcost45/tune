@@ -24,8 +24,7 @@ const routes: Routes = [
 		path: 'feed',
 		loadChildren: () =>
 			import('./components/pages/feed/feed.module').then((m) => m.FeedPageModule),
-		canActivate: [LoggedInActivateGuard],
-		runGuardsAndResolvers: 'always'
+		canActivate: [LoggedInActivateGuard]
 	},
 	{
 		path: 'login-failed',
@@ -46,8 +45,7 @@ const routes: Routes = [
 @NgModule({
 	imports: [
 		RouterModule.forRoot(routes, {
-			preloadingStrategy: PreloadAllModules,
-			onSameUrlNavigation: 'reload'
+			preloadingStrategy: PreloadAllModules
 		})
 	],
 	exports: [RouterModule]

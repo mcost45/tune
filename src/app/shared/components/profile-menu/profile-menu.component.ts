@@ -8,7 +8,7 @@ import { LoginService } from '../../../core/services/login.service';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileMenuComponent {
-	@Input() user?: SpotifyApi.CurrentUsersProfileResponse;
+	@Input() user?: SpotifyApi.CurrentUsersProfileResponse | null;
 
 	constructor(private readonly loginService: LoginService) {}
 

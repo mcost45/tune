@@ -90,7 +90,7 @@ export class SpotifyService {
 		this.logger.log(LogLevel.error, `[${e.status}] ${e.message}`);
 	}
 
-	private checkRecommendationsRequestSeeds(...seedSources: string[][]): void {
+	private checkRecommendationsRequestSeeds(...seedSources: string[][]) {
 		let count = 0;
 		for (const seed of seedSources) {
 			count += seed.length;

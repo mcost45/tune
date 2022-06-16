@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, filter, map, Observable } from 'rxjs';
 import { LogLevel } from '../../domain/utility/log-level';
+import { FeedStorageService } from '../../feed/services/feed-storage.service';
 import { LogService } from './utility/log.service';
 import { AuthInitService } from './authentication/auth-init.service';
 import { AccessTokenService } from './authentication/access-token.service';
@@ -20,7 +21,8 @@ export class UserService {
 		private readonly logger: LogService,
 		private readonly authInitService: AuthInitService,
 		private readonly accessTokenService: AccessTokenService,
-		private readonly authStorageService: AuthStorageService
+		private readonly authStorageService: AuthStorageService,
+		private readonly feedStorageService: FeedStorageService
 	) {}
 
 	async init(): Promise<void> {
@@ -37,8 +39,13 @@ export class UserService {
 	}
 
 	async removeUser(): Promise<void> {
-		await this.authStorageService.removeUser();
-		await this.authStorageService.removeAccessTokenSet();
+		await Promise.all([
+			this.authStorageService.removeUser(),
+			this.authStorageService.removeAccessTokenSet(),
+			this.feedStorageService.removeTracks(),
+			this.feedStorageService.removeArtists()
+		]);
+
 		this.userSubject.next(null);
 		this.logger.log(LogLevel.trace, `User removed.`);
 	}

@@ -22,7 +22,7 @@
 		size="large"
 		shape="round"
 		fill="outline"
-		[ngStyle]="context.imageUrl && { backgroundImage: context.imageUrl }"
+		[ngStyle]="(context.imageUrl && { backgroundImage: context.imageUrl }) || null"
 	></ion-button>
 </ng-template>
 
