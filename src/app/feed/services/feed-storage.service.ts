@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
-import { LogLevel } from '../../domain/utility/log-level';
-import { LogService } from '../../core/services/utility/log.service';
+import { LogLevel } from '../../shared/domain/utility/log-level';
+import { LogService } from '../../shared/services/utility/log.service';
 import { waitParallel } from '../../utility/wait-parallel';
 
 @Injectable({

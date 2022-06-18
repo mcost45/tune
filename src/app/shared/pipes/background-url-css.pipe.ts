@@ -1,11 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-	name: 'backgroundUrlStyle'
+	name: 'backgroundUrlCss'
 })
-export class BackgroundUrlStylePipe implements PipeTransform {
-	private static readonly offsetPerCardPx = 6;
-
+export class BackgroundUrlCssPipe implements PipeTransform {
 	transform(url?: string | null): Record<string, any> | undefined {
 		if (!url) {
 			return;

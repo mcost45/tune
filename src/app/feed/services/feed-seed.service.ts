@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
 import { SpotifyService } from '../../core/services/spotify.service';
-import { LogService } from '../../core/services/utility/log.service';
-import { LogLevel } from '../../domain/utility/log-level';
+import { LogService } from '../../shared/services/utility/log.service';
+import { LogLevel } from '../../shared/domain/utility/log-level';
 import { waitParallel } from '../../utility/wait-parallel';
 import { randomIntInRange } from '../../utility/random-int-in-range';
 import { getRandomItems } from '../../utility/shuffled';
@@ -13,11 +13,11 @@ import { FeedStorageService } from './feed-storage.service';
 export class FeedSeedService {
 	private static readonly failedToPopulateSeeds = 'Failed to populate seeds.';
 
-	private static readonly baseMaxSeedLen = 20;
-	private static readonly newToTopRatio = 3;
+	private static readonly baseMaxSeedLen = 30;
+	private static readonly newToTopRatio = 4;
 
-	initiated$: Observable<boolean>;
-	randomSeeds$: Observable<RandomSeedIds>;
+	private readonly initiated$: Observable<boolean>;
+	private readonly randomSeeds$: Observable<RandomSeedIds>;
 
 	private readonly initiatedS = new BehaviorSubject(false);
 	private readonly randomSeedsIdsS = new ReplaySubject<RandomSeedIds>();

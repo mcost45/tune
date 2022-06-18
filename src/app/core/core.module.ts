@@ -1,7 +1,8 @@
 import { APP_INITIALIZER, NgModule, Optional, SkipSelf } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
-import { ConfigService } from './services/utility/config.service';
-import { LogService } from './services/utility/log.service';
+import { ConfigService } from '../shared/services/utility/config.service';
+import { LogService } from '../shared/services/utility/log.service';
+import { InteractedService } from '../shared/services/interacted.service';
 import { AuthStorageService } from './services/authentication/auth-storage.service';
 import { UserService } from './services/user.service';
 
@@ -11,7 +12,8 @@ const coreFactory =
 		logService: LogService,
 		storage: Storage,
 		authStorageService: AuthStorageService,
-		userService: UserService
+		userService: UserService,
+		interactedService: InteractedService
 	) =>
 	() =>
 		new Promise<void>((resolve) => {
@@ -19,6 +21,7 @@ const coreFactory =
 				logService.init();
 				await storage.create();
 				await userService.init();
+				interactedService.init();
 
 				resolve();
 			});
@@ -29,7 +32,14 @@ const coreFactory =
 		{
 			provide: APP_INITIALIZER,
 			useFactory: coreFactory,
-			deps: [ConfigService, LogService, Storage, AuthStorageService, UserService],
+			deps: [
+				ConfigService,
+				LogService,
+				Storage,
+				AuthStorageService,
+				UserService,
+				InteractedService
+			],
 			multi: true
 		}
 	]

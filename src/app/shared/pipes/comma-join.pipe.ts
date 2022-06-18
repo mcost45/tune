@@ -1,13 +1,13 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-	name: 'cssUrl'
+	name: 'commaJoin'
 })
-export class CssUrlPipe implements PipeTransform {
-	transform(value?: string | null): string | undefined {
-		if (!value) {
+export class CommaJoinPipe implements PipeTransform {
+	transform(strings?: string[] | null): string | undefined {
+		if (!strings) {
 			return;
 		}
-		return `url(${value})`;
+		return strings.join(', ');
 	}
 }

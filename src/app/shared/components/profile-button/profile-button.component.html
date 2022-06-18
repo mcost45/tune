@@ -16,13 +16,13 @@
 
 <ng-template #loggedInButton>
 	<ion-button
-		*ngIf="{ imageUrl: imageUrl$ | async | cssUrl } as context"
+		*ngIf="{ imageUrl: imageUrl$ | async } as context"
 		id="profile-button"
 		class="profile-button"
 		size="large"
 		shape="round"
 		fill="outline"
-		[ngStyle]="(context.imageUrl && { backgroundImage: context.imageUrl }) || null"
+		[ngStyle]="context.imageUrl | backgroundUrlCss"
 	></ion-button>
 </ng-template>
 

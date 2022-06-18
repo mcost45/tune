@@ -2,21 +2,21 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { ConfigService } from '../../../shared/services/utility/config.service';
 
 @Pipe({
-	name: 'popularityCategory'
+	name: 'loudnessCategory'
 })
-export class PopularityCategoryPipe implements PipeTransform {
+export class LoudnessCategoryPipe implements PipeTransform {
 	constructor(private readonly configService: ConfigService) {}
 
-	transform(energy?: number | null): string | undefined {
-		const config = this.configService.config.categories.energy;
-		if (energy === undefined || energy === null) {
+	transform(loudness?: number | null): string | undefined {
+		const config = this.configService.config.categories.loudness;
+		if (loudness === undefined || loudness === null) {
 			return;
 		}
 
-		if (energy > config.max) {
-			return 'CATEGORIES.HIGH_ENERGY';
-		} else if (energy < config.min) {
-			return 'CATEGORIES.RELAXED';
+		if (loudness > config.max) {
+			return 'CATEGORIES.LOUD';
+		} else if (loudness < config.min) {
+			return 'CATEGORIES.QUIET';
 		}
 	}
 }

@@ -9,13 +9,19 @@ $feed-card-padding: 20px;
 $feed-card-width: 400px + $feed-card-padding;
 $feed-card-height: math.div($feed-card-width, math.div(1, $golden-ratio));
 $feed-card-subtitle-gap: 8px;
-$feed-card-title-y-padding: 1%;
-$feed-card-subtitle-y-padding: 5%;
-$feed-card-artist-image-size: 15%;
+$feed-card-title-y-padding: 8%;
+$feed-card-subtitle-y-padding: 4%;
+$feed-card-category-y-padding: 7%;
+$feed-card-artist-image-size: 18%;
 $feed-card-text-colour: #ffffff;
-
-// ionic
-ion-progress-bar {
-	--background: transparent;
-	--progress-background: #ffffff7f;
-}
+$feed-card-category-gap: 8px;
+$feed-card-progress-transition-duration: 1s;
+$feed-card-progress-height: 10px;
+$feed-card-track-image-saturation: 1.85;
+$feed-card-track-image-brightness: 1.1;
+$feed-card-track-image-contrast: 1.2;
+$feed-card-track-image-overlay-shadow: linear-gradient(
+	rgba(0, 0, 0, 0) 25%,
+	rgba(0, 0, 0, 0.3) 50%,
+	rgba(0, 0, 0, 0.65)
+);

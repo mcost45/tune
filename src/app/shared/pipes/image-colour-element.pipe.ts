@@ -1,22 +1,17 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Observable } from 'rxjs';
 import { AverageColourService } from '../services/average-colour.service';
 
 @Pipe({
-	name: 'imageColour'
+	name: 'imageColourElement'
 })
-export class ImageColourPipe implements PipeTransform {
+export class ImageColourElementPipe implements PipeTransform {
 	constructor(private readonly averageColourService: AverageColourService) {}
 
-	transform(image?: string | HTMLImageElement | null): string | Observable<string> | undefined {
+	transform(image?: HTMLImageElement | null): string | undefined {
 		if (!image) {
 			return;
 		}
 
-		if (typeof image === 'string') {
-			return this.averageColourService.getAverageImageUrlHex(image);
-		} else {
-			return this.averageColourService.getAverageImageHex(image);
-		}
+		return this.averageColourService.getAverageImageRgba(image);
 	}
 }

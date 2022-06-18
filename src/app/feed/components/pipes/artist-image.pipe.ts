@@ -1,21 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-	name: 'artistNames'
+	name: 'artistImage'
 })
-export class ArtistNamesPipe implements PipeTransform {
-	transform(value?: SpotifyApi.ArtistObjectSimplified[]): string[] | undefined {
-		if (!value) {
+export class ArtistImagePipe implements PipeTransform {
+	transform(artist?: SpotifyApi.ArtistObjectFull | null): string | undefined {
+		if (!artist) {
 			return;
 		}
 
-		const len = value.length;
-		const out = new Array(len);
-
-		for (let i = 0; i < len; i++) {
-			out[i] = value[i].name;
-		}
-
-		return out;
+		return artist.images[0]?.url;
 	}
 }

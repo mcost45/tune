@@ -3,16 +3,16 @@ import { Observable } from 'rxjs';
 import { AverageColourService } from '../services/average-colour.service';
 
 @Pipe({
-	name: 'imageColourElement'
+	name: 'imageColourUrl'
 })
-export class ImageColourElementPipe implements PipeTransform {
+export class ImageColourUrlPipe implements PipeTransform {
 	constructor(private readonly averageColourService: AverageColourService) {}
 
-	transform(image?: HTMLImageElement | null): string | Observable<string> | undefined {
+	transform(image?: string | null): Observable<string> | undefined {
 		if (!image) {
 			return;
 		}
 
-		return this.averageColourService.getAverageImageHex(image);
+		return this.averageColourService.getAverageImageUrlRgba(image);
 	}
 }

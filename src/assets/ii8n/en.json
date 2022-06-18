@@ -14,5 +14,16 @@
 	"ACTIONS": {
 		"LOGIN": "Login",
 		"LOGOUT": "Logout"
+	},
+	"CATEGORIES": {
+		"HOT": "Popular 🔥",
+		"HIDDEN_GEM": "Hidden gem 💎",
+		"GROOVY": "Groovy 🕺",
+		"SLOW_DANCE": "Slow dance 💃",
+		"HIGH_ENERGY": "Energetic ⚡",
+		"RELAXED": "Relaxed 🏖️",
+		"LOUD": "Loud 📢️",
+		"QUIET": "Quiet 🤫",
+		"ACOUSTIC": "Accoustic 🎸"
 	}
 }

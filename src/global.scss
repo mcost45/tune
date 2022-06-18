@@ -18,5 +18,31 @@
 @import '~@ionic/angular/css/typography.css';
 @import '~@ionic/angular/css/display.css';
 
-@import 'swiper/scss';
-@import '~@ionic/angular/css/ionic-swiper';
+.no-select {
+	user-select: none;
+}
+
+.hyphenate {
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	word-break: break-word;
+	hyphens: auto;
+}
+
+.material-icons {
+	vertical-align: middle;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+// Allows using mat-icons only without any other @angular/material usage, disabling the warning.
+.mat-theme-loaded-marker {
+	display: none;
+}

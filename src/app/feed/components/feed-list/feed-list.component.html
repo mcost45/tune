@@ -1,3 +1,11 @@
-<ng-container *ngFor="let track of activeTracks$ | async; trackBy: trackBy"
-	><app-feed-card [track]="track"></app-feed-card
-></ng-container>
+<ng-container
+	*ngFor="let recommendation of activeCards$ | async; let i = index; trackBy: trackById"
+>
+	<app-feed-card
+		class="no-select"
+		[index]="i"
+		[recommendation]="recommendation"
+		[transitionDurationMs]="transitionDurationMs"
+		[ngStyle]="i | cardOffset"
+	></app-feed-card>
+</ng-container>

@@ -1,17 +1,23 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Pipe({
-	name: 'sanitizeResourceUrl'
+	name: 'truncateString'
 })
-export class SanitizeResourceUrlPipe implements PipeTransform {
-	constructor(private readonly domSanitizer: DomSanitizer) {}
-
-	transform(url?: string | null): SafeResourceUrl | undefined {
-		if (!url) {
+export class TruncateStringPipe implements PipeTransform {
+	transform(value?: string | null, length?: number): string | undefined {
+		if (!value) {
 			return;
 		}
 
-		return this.domSanitizer.bypassSecurityTrustResourceUrl(url);
+		if (!length) {
+			return value;
+		}
+
+		const currentLen = value.length;
+		if (currentLen < length) {
+			return value;
+		}
+
+		return value.substring(0, length).trimEnd() + '...';
 	}
 }

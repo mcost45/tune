@@ -4,9 +4,9 @@ import { ReplaySubject, take, takeUntil } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { AuthCallbackService } from '../../../core/services/authentication/auth-callback.service';
 import { UserService } from '../../../core/services/user.service';
-import { LogService } from '../../../core/services/utility/log.service';
+import { LogService } from '../../../shared/services/utility/log.service';
 import { LoginService } from '../../../core/services/login.service';
-import { ConfigService } from '../../../core/services/utility/config.service';
+import { ConfigService } from '../../../shared/services/utility/config.service';
 
 @Component({
 	selector: 'app-auth-callback',
@@ -14,7 +14,7 @@ import { ConfigService } from '../../../core/services/utility/config.service';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AuthCallbackComponent implements OnDestroy {
-	private readonly destroyed$ = new ReplaySubject(1);
+	private readonly destroyedS = new ReplaySubject(1);
 
 	constructor(
 		private readonly logger: LogService,
@@ -25,14 +25,14 @@ export class AuthCallbackComponent implements OnDestroy {
 		private readonly loginService: LoginService,
 		private readonly authCallbackService: AuthCallbackService
 	) {
-		route.params.pipe(takeUntil(this.destroyed$)).subscribe(async () => {
+		route.params.pipe(takeUntil(this.destroyedS)).subscribe(async () => {
 			await this.initiate();
 		});
 	}
 
 	ngOnDestroy() {
-		this.destroyed$.next(true);
-		this.destroyed$.complete();
+		this.destroyedS.next(true);
+		this.destroyedS.complete();
 	}
 
 	async initiate() {
@@ -40,7 +40,7 @@ export class AuthCallbackComponent implements OnDestroy {
 
 		this.userService
 			.getUser$()
-			.pipe(take(1))
+			.pipe(take(1), takeUntil(this.destroyedS))
 			.subscribe(async (user) => {
 				if (user) {
 					this.allowPrevNavAfterAuth();

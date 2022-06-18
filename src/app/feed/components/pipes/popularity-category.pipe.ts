@@ -1,14 +1,22 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { ConfigService } from '../../../shared/services/utility/config.service';
 
 @Pipe({
-	name: 'trackImage'
+	name: 'popularityCategory'
 })
-export class TrackImagePipe implements PipeTransform {
-	transform(track?: SpotifyApi.TrackObjectFull | null): string | undefined {
-		if (!track) {
+export class PopularityCategoryPipe implements PipeTransform {
+	constructor(private readonly configService: ConfigService) {}
+
+	transform(popularity?: number | null): string | undefined {
+		const config = this.configService.config.categories.popularity;
+		if (popularity === undefined || popularity === null) {
 			return;
 		}
 
-		return track.album.images[0]?.url;
+		if (popularity > config.max) {
+			return 'CATEGORIES.HOT';
+		} else if (popularity < config.min) {
+			return 'CATEGORIES.HIDDEN_GEM';
+		}
 	}
 }

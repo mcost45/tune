@@ -2,21 +2,21 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { ConfigService } from '../../../shared/services/utility/config.service';
 
 @Pipe({
-	name: 'popularityCategory'
+	name: 'energyCategory'
 })
-export class PopularityCategoryPipe implements PipeTransform {
+export class EnergyCategoryPipe implements PipeTransform {
 	constructor(private readonly configService: ConfigService) {}
 
-	transform(popularity?: number | null): string | undefined {
-		const config = this.configService.config.categories.popularity;
-		if (popularity === undefined || popularity === null) {
+	transform(energy?: number | null): string | undefined {
+		const config = this.configService.config.categories.energy;
+		if (energy === undefined || energy === null) {
 			return;
 		}
 
-		if (popularity > config.max) {
-			return 'CATEGORIES.HOT';
-		} else if (popularity < config.min) {
-			return 'CATEGORIES.HIDDEN_GEM';
+		if (energy > config.max) {
+			return 'CATEGORIES.HIGH_ENERGY';
+		} else if (energy < config.min) {
+			return 'CATEGORIES.RELAXED';
 		}
 	}
 }

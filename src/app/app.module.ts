@@ -1,5 +1,4 @@
 import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -8,6 +7,7 @@ import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-transla
 import { HttpClient } from '@angular/common/http';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { BrowserModule } from '@angular/platform-browser';
 import { environment } from '../environments/environment';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';

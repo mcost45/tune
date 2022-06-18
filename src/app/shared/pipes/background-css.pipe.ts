@@ -1,16 +1,14 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-	name: 'backgroundUrlCss'
+	name: 'backgroundCss'
 })
-export class BackgroundUrlCssPipe implements PipeTransform {
-	private static readonly offsetPerCardPx = 6;
-
-	transform(url?: string | null): Record<string, any> | undefined {
-		if (!url) {
+export class BackgroundCssPipe implements PipeTransform {
+	transform(value?: string | null): Record<string, any> | undefined {
+		if (!value) {
 			return;
 		}
 
-		return { backgroundImage: `url(${url})` };
+		return { backgroundImage: `${value}` };
 	}
 }

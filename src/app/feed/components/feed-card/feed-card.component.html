@@ -1,8 +1,80 @@
-<ng-container *ngIf="track">
-	<br />
-	{{ track.name }}<br />
-	<div *ngFor="let artist of track.artists">
-		{{ artist.name }}
+<ion-card class="card-wrapper">
+	<ng-container
+		[ngTemplateOutlet]="recommendation ? hasRecommendation : recommendationError"
+		[ngTemplateOutletContext]="{
+			track: recommendation.track,
+			artist: recommendation.primaryArtist,
+			features: recommendation.features
+		}"
+	></ng-container>
+</ion-card>
+
+<ng-template #hasRecommendation let-track="track" let-artist="artist" let-features="features">
+	<div class="track-image" [ngStyle]="track | trackImage | backgroundUrlCss">
+		<div
+			class="overlay-colour-fade"
+			[ngStyle]="
+				track
+					| trackImage
+					| imageColourUrl
+					| async
+					| backgroundFadeCss: overlayFadeStrengthPercentage
+			"
+		></div>
+		<div class="overlay-shadow"></div>
 	</div>
-	{{ track.preview_url }}
-</ng-container>
+
+	<div [ngClass]="{ 'is-first': isFirst }" class="content-wrapper">
+		<ng-container *ngTemplateOutlet="header"></ng-container>
+		<ng-container *ngTemplateOutlet="categorisation"></ng-container>
+		<ion-progress-bar [value]="playProgress$ | async"></ion-progress-bar>
+	</div>
+
+	<ng-template #header>
+		<ion-card-header>
+			<ion-card-subtitle class="subtitle hyphenate">
+				<img
+					[src]="artist | artistImage"
+					[ngClass]="{ 'is-first': isFirst }"
+					class="artist-image"
+					alt="Artist Image"
+					fetchpriority="low"
+					draggable="false"
+				/>
+				{{ track.artists | artistNames | commaJoin }}
+			</ion-card-subtitle>
+			<ion-card-title class="title hyphenate"
+				>{{ track.name | truncateString: maxTitleCharLen
+				}}<span *ngIf="track.explicit"
+					>&nbsp;<mat-icon>explicit</mat-icon></span
+				></ion-card-title
+			>
+		</ion-card-header>
+	</ng-template>
+
+	<ng-template #categorisation>
+		<ion-card-content class="categories">
+			<div *ngIf="track.popularity | popularityCategory as key" class="category">
+				{{ key | translate }}
+			</div>
+			<div *ngIf="features.danceability | danceabilityCategory as key" class="category">
+				{{ key | translate }}
+			</div>
+			<div *ngIf="features.energy | energyCategory as key" class="category">
+				{{ key | translate }}
+			</div>
+			<div *ngIf="features.loudness | loudnessCategory as key" class="category">
+				{{ key | translate }}
+			</div>
+			<div *ngIf="features.acousticness | acousticnessCategory as key" class="category">
+				{{ key | translate }}
+			</div>
+		</ion-card-content>
+	</ng-template>
+</ng-template>
+
+<ng-template #recommendationError
+	><ion-card-header>
+		<ion-card-title>Sorry, something went wrong...</ion-card-title>
+	</ion-card-header></ng-template
+>

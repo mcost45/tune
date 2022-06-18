@@ -2,18 +2,20 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, filter, Observable, ReplaySubject, takeUntil } from 'rxjs';
 import { SpotifyService } from '../../core/services/spotify.service';
 import { waitParallel } from '../../utility/wait-parallel';
+import { RecommendedCard } from '../domain/recommended-card';
+import { waitTime } from '../../utility/wait-time';
 import { FeedSeedService } from './feed-seed.service';
-import TrackObjectSimplified = SpotifyApi.TrackObjectSimplified;
 
 @Injectable()
 export class FeedService implements OnDestroy {
+	private static readonly retryOnEmptyFilteredMs = 2000;
 	private static readonly totalSeedsForRecommendation = 5;
 
 	private readonly initiated$: Observable<boolean>;
-	private readonly tracks$: Observable<TrackObjectSimplified[]>;
+	private readonly recommended$: Observable<RecommendedCard[]>;
 
 	private readonly initiatedS = new BehaviorSubject(false);
-	private readonly trackS = new ReplaySubject<TrackObjectSimplified[]>();
+	private readonly recommendedS = new ReplaySubject<RecommendedCard[]>();
 	private readonly destroyedS = new ReplaySubject(1);
 
 	constructor(
@@ -21,26 +23,17 @@ export class FeedService implements OnDestroy {
 		private readonly feedSeedService: FeedSeedService
 	) {
 		this.initiated$ = this.initiatedS.asObservable();
-		this.tracks$ = this.trackS.asObservable();
+		this.recommended$ = this.recommendedS.asObservable();
 
-		this.feedSeedService.isInitiated$
-			.pipe(
-				filter((isInitiated) => isInitiated),
-				takeUntil(this.destroyedS)
-			)
-			.subscribe((initiated) => this.initiatedS.next(initiated));
-
-		this.feedSeedService.randomSeeds$
-			.pipe(takeUntil(this.destroyedS))
-			.subscribe(({ trackIds, artistIds }) => this.onNewRandomSeeds(trackIds, artistIds));
+		this.setupObservables();
 	}
 
 	get isInitiated$(): Observable<boolean> {
 		return this.initiated$;
 	}
 
-	get recommendedTracks$(): Observable<TrackObjectSimplified[]> {
-		return this.tracks$;
+	get recommendedCards$(): Observable<RecommendedCard[]> {
+		return this.recommended$;
 	}
 
 	ngOnDestroy() {
@@ -56,43 +49,92 @@ export class FeedService implements OnDestroy {
 		this.feedSeedService.generateRandomSeedIds(FeedService.totalSeedsForRecommendation);
 	}
 
-	likeTrack(track: TrackObjectSimplified): Promise<[void, void]> {
+	likeTrack(track: SpotifyApi.TrackObjectSimplified): Promise<[void, void]> {
 		return waitParallel(
 			this.feedSeedService.addTrackSeeds([track]),
 			this.feedSeedService.addArtistSeeds(track.artists)
 		);
 	}
 
-	private async onNewRandomSeeds(artistIds: string[], trackIds: string[]): Promise<void> {
-		const response = await this.spotifyService.getRecommendations(20, artistIds, trackIds);
-		const recommendedTracks = await this.handleResponse(response);
-		this.trackS.next(recommendedTracks);
+	private setupObservables(): void {
+		this.feedSeedService.isInitiated$
+			.pipe(
+				filter((isInitiated) => isInitiated),
+				takeUntil(this.destroyedS)
+			)
+			.subscribe((initiated) => this.initiatedS.next(initiated));
+
+		this.feedSeedService.randomSeedIds$
+			.pipe(takeUntil(this.destroyedS))
+			.subscribe(({ trackIds, artistIds }) => this.onNewRandomSeeds(trackIds, artistIds));
 	}
 
-	private async handleResponse(
+	private async onNewRandomSeeds(artistIds: string[], trackIds: string[]): Promise<void> {
+		const response = await this.spotifyService.getRecommendations(20, artistIds, trackIds);
+		const recommendedCards = await this.getRecommendedCards(response);
+		if (recommendedCards) {
+			this.recommendedS.next(recommendedCards);
+		}
+	}
+
+	private async getRecommendedCards(
 		response: SpotifyApi.RecommendationsFromSeedsResponse | undefined
-	): Promise<SpotifyApi.TrackObjectSimplified[]> {
+	): Promise<RecommendedCard[] | undefined> {
 		if (!response) {
 			return [];
 		}
 
-		return this.filterPreviewable(response);
+		const [trackIds, artistIds] = this.filterPreviewableIds(response);
+
+		if (!trackIds.length) {
+			await waitTime(FeedService.retryOnEmptyFilteredMs);
+			this.triggerRecommendations();
+			return undefined;
+		}
+
+		const [trackResponse, artistResponse, featureResponse] = await waitParallel(
+			this.spotifyService.getDetailedTracks(trackIds),
+			this.spotifyService.getDetailedArtists(artistIds),
+			this.spotifyService.getTrackFeatures(trackIds)
+		);
+
+		if (!trackResponse || !artistResponse || !featureResponse) {
+			return [];
+		}
+
+		const tracks = trackResponse.tracks;
+		const artists = artistResponse.artists;
+		const features = featureResponse.audio_features;
+		const trackLen = tracks.length;
+
+		const recommendations: RecommendedCard[] = new Array(trackLen);
+		for (let i = 0; i < trackLen; i++) {
+			recommendations[i] = {
+				track: tracks[i],
+				primaryArtist: artists[i],
+				features: features[i]
+			};
+		}
+
+		return recommendations;
 	}
 
-	private filterPreviewable(
+	private filterPreviewableIds(
 		response: SpotifyApi.RecommendationsFromSeedsResponse
-	): SpotifyApi.TrackObjectSimplified[] {
-		const out: SpotifyApi.TrackObjectSimplified[] = [];
+	): [trackIds: string[], artistIds: string[]] {
+		const outTracks: string[] = [];
+		const outArtists: string[] = [];
 		const tracks = response.tracks;
 		const trackLen = tracks.length;
 
 		for (let i = 0; i < trackLen; i++) {
 			const track = tracks[i];
 			if (tracks[i].preview_url) {
-				out.push(track);
+				outTracks.push(track.id);
+				outArtists.push(track.artists[0].id);
 			}
 		}
 
-		return out;
+		return [outTracks, outArtists];
 	}
 }

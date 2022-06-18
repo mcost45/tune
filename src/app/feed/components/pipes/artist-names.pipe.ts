@@ -1,13 +1,21 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-	name: 'commaJoin'
+	name: 'artistNames'
 })
-export class CommaJoinPipe implements PipeTransform {
-	transform(value?: string[]): string | undefined {
-		if (!value) {
+export class ArtistNamesPipe implements PipeTransform {
+	transform(artists?: SpotifyApi.ArtistObjectSimplified[] | null): string[] | undefined {
+		if (!artists) {
 			return;
 		}
-		return value.join(', ');
+
+		const len = artists.length;
+		const out = new Array(len);
+
+		for (let i = 0; i < len; i++) {
+			out[i] = artists[i].name;
+		}
+
+		return out;
 	}
 }
