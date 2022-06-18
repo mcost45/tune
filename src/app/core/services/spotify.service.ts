@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import SpotifyWebApi from 'spotify-web-api-js';
 import { firstValueFrom, Observable } from 'rxjs';
-import { LogLevel } from '../../domain/utility/log-level';
+import { LogLevel } from '../../shared/domain/utility/log-level';
 import { waitTime } from '../../utility/wait-time';
 import { SpotifyCallKeys } from '../../feed/domain/spotify-call-keys';
+import { LogService } from '../../shared/services/utility/log.service';
 import { UserService } from './user.service';
-import { LogService } from './utility/log.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -77,6 +77,13 @@ export class SpotifyService {
 	): Promise<SpotifyApi.MultipleArtistsResponse | undefined> {
 		this.logger.log(LogLevel.trace, `Fetching ${artistIds.length} artists.`);
 		return this.tryAPICall(() => this.api.getArtists(artistIds));
+	}
+
+	async getTrackFeatures(
+		trackIds: string[]
+	): Promise<SpotifyApi.MultipleAudioFeaturesResponse | undefined> {
+		this.logger.log(LogLevel.trace, `Fetching ${trackIds.length} track features.`);
+		return this.tryAPICall(() => this.api.getAudioFeaturesForTracks(trackIds));
 	}
 
 	private tryAPICall<T>(

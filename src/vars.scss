@@ -1,0 +1,21 @@
+@use 'sass:math';
+
+$golden-ratio: 1.618;
+
+$border-radius: 24px;
+$placeholder-colour: #d3d3d3;
+
+$feed-card-padding: 20px;
+$feed-card-width: 400px + $feed-card-padding;
+$feed-card-height: math.div($feed-card-width, math.div(1, $golden-ratio));
+$feed-card-subtitle-gap: 8px;
+$feed-card-title-y-padding: 1%;
+$feed-card-subtitle-y-padding: 5%;
+$feed-card-artist-image-size: 15%;
+$feed-card-text-colour: #ffffff;
+
+// ionic
+ion-progress-bar {
+	--background: transparent;
+	--progress-background: #ffffff7f;
+}

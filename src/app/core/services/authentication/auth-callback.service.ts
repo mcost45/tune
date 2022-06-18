@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AuthCallbackProps } from '../../../domain/authentication/auth-callback-props';
-import { LogService } from '../utility/log.service';
-import { ConfigService } from '../utility/config.service';
+import { LogService } from '../../../shared/services/utility/log.service';
+import { ConfigService } from '../../../shared/services/utility/config.service';
 import { LoginService } from '../login.service';
-import { LogLevel } from '../../../domain/utility/log-level';
+import { LogLevel } from '../../../shared/domain/utility/log-level';
 import { AccessTokenService } from './access-token.service';
 import { AuthStorageService } from './auth-storage.service';
 

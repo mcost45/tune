@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { LogLevel } from '../../domain/utility/log-level';
-import { LogService } from './utility/log.service';
+import { LogLevel } from '../../shared/domain/utility/log-level';
+import { LogService } from '../../shared/services/utility/log.service';
+import { ConfigService } from '../../shared/services/utility/config.service';
 import { AuthInitService } from './authentication/auth-init.service';
 import { AccessTokenService } from './authentication/access-token.service';
 import { SpotifyService } from './spotify.service';
 import { UserService } from './user.service';
 import { AuthStorageService } from './authentication/auth-storage.service';
-import { ConfigService } from './utility/config.service';
 
 @Injectable({
 	providedIn: 'root'

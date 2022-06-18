@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, filter, map, Observable } from 'rxjs';
-import { LogLevel } from '../../domain/utility/log-level';
+import { LogLevel } from '../../shared/domain/utility/log-level';
 import { FeedStorageService } from '../../feed/services/feed-storage.service';
 import { waitParallel } from '../../utility/wait-parallel';
-import { LogService } from './utility/log.service';
+import { LogService } from '../../shared/services/utility/log.service';
 import { AuthInitService } from './authentication/auth-init.service';
 import { AccessTokenService } from './authentication/access-token.service';
 import { AuthStorageService } from './authentication/auth-storage.service';

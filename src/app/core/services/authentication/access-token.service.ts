@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { LogService } from '../utility/log.service';
-import { LogLevel } from '../../../domain/utility/log-level';
+import { LogService } from '../../../shared/services/utility/log.service';
+import { LogLevel } from '../../../shared/domain/utility/log-level';
 import { AccessTokenInitProps } from '../../../domain/authentication/access-token-init-props';
 import { AccessTokenInitKeys } from '../../../domain/authentication/access-token-init-keys';
 import { TokenSetProps } from '../../../domain/authentication/token-set-props';
 import { TokenSetKeys } from '../../../domain/authentication/token-set-keys';
-import { ConfigService } from '../utility/config.service';
+import { ConfigService } from '../../../shared/services/utility/config.service';
 import { AccessTokenRefreshProps } from '../../../domain/authentication/access-token-refresh-props';
 import { AccessTokenRefreshKeys } from '../../../domain/authentication/access-token-refresh-keys';
 import { AuthStorageService } from './auth-storage.service';
