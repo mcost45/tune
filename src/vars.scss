@@ -4,6 +4,19 @@ $golden-ratio: 1.618;
 
 $border-radius: 24px;
 $placeholder-colour: #d3d3d3;
+$page-padding: 32px 16px;
+$page-gap: 42px;
+
+$footer-padding: 16px;
+$footer-gap: 8px;
+$footer-opacity: 0.8;
+$footer-background: var(--ion-card-background);
+
+$title-min-width: 300px;
+$title-max-width: 900px;
+$title-min-size: 40px;
+$title-max-size: 56px;
+$title-font-weight: 700;
 
 $feed-card-padding: 20px;
 $feed-card-width: 400px + $feed-card-padding;
@@ -17,11 +30,16 @@ $feed-card-text-colour: #ffffff;
 $feed-card-category-gap: 8px;
 $feed-card-progress-transition-duration: 1s;
 $feed-card-progress-height: 10px;
-$feed-card-track-image-saturation: 1.85;
-$feed-card-track-image-brightness: 1.1;
+$feed-card-track-image-saturation: 2.5;
+$feed-card-track-image-brightness: 0.9;
 $feed-card-track-image-contrast: 1.2;
+$feed-card-track-image-blur: 2px;
 $feed-card-track-image-overlay-shadow: linear-gradient(
 	rgba(0, 0, 0, 0) 25%,
-	rgba(0, 0, 0, 0.3) 50%,
-	rgba(0, 0, 0, 0.65)
+	rgba(0, 0, 0, 0.35) 50%,
+	rgba(0, 0, 0, 0.7)
 );
+$feed-card-box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px,
+	rgba(17, 17, 26, 0.1) 0px 16px 56px;
+
+$landing-video-width: min(100%, 500px);

@@ -1,13 +1,19 @@
-<ion-header [translucent]="true">
-	<ion-toolbar>
-		<ion-buttons slot="start">
-			<ion-button size="large" shape="round">test</ion-button>
-		</ion-buttons>
+<ion-toolbar>
+	<ion-buttons slot="start">
+		<ion-button class="logo" size="large" shape="round" [routerLink]="'/home'">
+			<ion-icon slot="icon-only" [src]="'/assets/icon/favicon.svg'"></ion-icon>
+		</ion-button>
+	</ion-buttons>
 
-		<ion-buttons slot="end"
-			><app-profile-button [user$]="user$" [imageUrl$]="imageUrl$"></app-profile-button
-		></ion-buttons>
+	<ion-buttons slot="end"
+		><app-profile-button
+			[user$]="user$"
+			[imageUrl$]="imageUrl$"
+			[triggerId]="profileTriggerId"
+		></app-profile-button
+	></ion-buttons>
 
-		<ion-title slot="start" size="large">{{ titleKey | translate }}</ion-title>
-	</ion-toolbar>
-</ion-header>
+	<ion-title slot="start" size="large">
+		<h1>{{ titleKey | translate }}</h1>
+	</ion-title>
+</ion-toolbar>

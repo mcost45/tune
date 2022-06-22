@@ -118,7 +118,7 @@ export class FeedSeedService {
 	private onPreExistingSeeds(
 		trackSeeds: SpotifyApi.TrackObjectSimplified[],
 		artistSeeds: (SpotifyApi.ArtistObjectFull | SpotifyApi.ArtistObjectSimplified)[]
-	): void {
+	) {
 		this.logger.log(
 			LogLevel.trace,
 			`Track [${trackSeeds.length}] and artist [${artistSeeds.length}] seeds already existing.`
@@ -149,11 +149,10 @@ export class FeedSeedService {
 		const combinedLen = listLen + insertLen;
 		const maxLen = this.maxSeedLen;
 
-		if (combinedLen >= maxLen) {
-			list.splice(seedsInUse, combinedLen - maxLen, ...seeds);
-		} else {
-			list.push(...seeds);
+		if (combinedLen > maxLen) {
+			list.splice(seedsInUse, combinedLen - maxLen);
 		}
+		list.push(...seeds);
 
 		await storeFn(list);
 

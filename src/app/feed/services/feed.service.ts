@@ -5,11 +5,15 @@ import { waitParallel } from '../../utility/wait-parallel';
 import { RecommendedCard } from '../domain/recommended-card';
 import { waitTime } from '../../utility/wait-time';
 import { FeedSeedService } from './feed-seed.service';
+import { FeedStorageService } from './feed-storage.service';
 
 @Injectable()
 export class FeedService implements OnDestroy {
+	private static readonly likeBatchThrottleMs = 4000;
 	private static readonly retryOnEmptyFilteredMs = 2000;
 	private static readonly totalSeedsForRecommendation = 5;
+	private static readonly defaultMaxFetchAmount = 10;
+	private static readonly maxHistoryLen = 300;
 
 	private readonly initiated$: Observable<boolean>;
 	private readonly recommended$: Observable<RecommendedCard[]>;
@@ -18,9 +22,15 @@ export class FeedService implements OnDestroy {
 	private readonly recommendedS = new ReplaySubject<RecommendedCard[]>();
 	private readonly destroyedS = new ReplaySubject(1);
 
+	private readonly likeBatch: string[] = [];
+	private likeBatchTimer?: ReturnType<typeof setTimeout>;
+
+	private maxFetchAmount = FeedService.defaultMaxFetchAmount;
+
 	constructor(
 		private readonly spotifyService: SpotifyService,
-		private readonly feedSeedService: FeedSeedService
+		private readonly feedSeedService: FeedSeedService,
+		private readonly feedStorageService: FeedStorageService
 	) {
 		this.initiated$ = this.initiatedS.asObservable();
 		this.recommended$ = this.recommendedS.asObservable();
@@ -36,7 +46,14 @@ export class FeedService implements OnDestroy {
 		return this.recommended$;
 	}
 
+	setFetchAmount(amount: number) {
+		this.maxFetchAmount = amount;
+	}
+
 	ngOnDestroy() {
+		clearTimeout(this.likeBatchTimer);
+		this.flushLikeBatch();
+
 		this.destroyedS.next(true);
 		this.destroyedS.complete();
 	}
@@ -49,14 +66,32 @@ export class FeedService implements OnDestroy {
 		this.feedSeedService.generateRandomSeedIds(FeedService.totalSeedsForRecommendation);
 	}
 
-	likeTrack(track: SpotifyApi.TrackObjectSimplified): Promise<[void, void]> {
+	dislikeTrack(track: SpotifyApi.TrackObjectSimplified): Promise<void> {
+		return this.saveUsedIdsInHistory([track.id]);
+	}
+
+	likeTrack(track: SpotifyApi.TrackObjectSimplified): Promise<[void, void, void]> {
+		this.likeBatch.push(track.id);
+		this.scheduleLikesFlush();
+
 		return waitParallel(
+			this.saveUsedIdsInHistory([track.id]),
 			this.feedSeedService.addTrackSeeds([track]),
 			this.feedSeedService.addArtistSeeds(track.artists)
 		);
 	}
 
-	private setupObservables(): void {
+	flushLikeBatch() {
+		const batch = this.likeBatch;
+		if (batch.length) {
+			this.spotifyService
+				.likeTracks([...this.likeBatch])
+				.then(() => (this.likeBatchTimer = undefined));
+			this.likeBatch.length = 0;
+		}
+	}
+
+	private setupObservables() {
 		this.feedSeedService.isInitiated$
 			.pipe(
 				filter((isInitiated) => isInitiated),
@@ -70,7 +105,11 @@ export class FeedService implements OnDestroy {
 	}
 
 	private async onNewRandomSeeds(artistIds: string[], trackIds: string[]): Promise<void> {
-		const response = await this.spotifyService.getRecommendations(20, artistIds, trackIds);
+		const response = await this.spotifyService.getRecommendations(
+			this.maxFetchAmount,
+			artistIds,
+			trackIds
+		);
 		const recommendedCards = await this.getRecommendedCards(response);
 		if (recommendedCards) {
 			this.recommendedS.next(recommendedCards);
@@ -84,12 +123,12 @@ export class FeedService implements OnDestroy {
 			return [];
 		}
 
-		const [trackIds, artistIds] = this.filterPreviewableIds(response);
+		const [trackIds, artistIds] = await this.filterPreviewableAndUnusedIds(response);
 
 		if (!trackIds.length) {
 			await waitTime(FeedService.retryOnEmptyFilteredMs);
 			this.triggerRecommendations();
-			return undefined;
+			return;
 		}
 
 		const [trackResponse, artistResponse, featureResponse] = await waitParallel(
@@ -119,22 +158,48 @@ export class FeedService implements OnDestroy {
 		return recommendations;
 	}
 
-	private filterPreviewableIds(
+	private async filterPreviewableAndUnusedIds(
 		response: SpotifyApi.RecommendationsFromSeedsResponse
-	): [trackIds: string[], artistIds: string[]] {
+	): Promise<[trackIds: string[], artistIds: string[]]> {
 		const outTracks: string[] = [];
 		const outArtists: string[] = [];
 		const tracks = response.tracks;
 		const trackLen = tracks.length;
+		const historyTrackIds = await this.feedStorageService.getTrackIdsHistory();
 
 		for (let i = 0; i < trackLen; i++) {
 			const track = tracks[i];
-			if (tracks[i].preview_url) {
-				outTracks.push(track.id);
+			const trackId = track.id;
+			if (track.preview_url && !historyTrackIds.includes(trackId)) {
+				outTracks.push(trackId);
 				outArtists.push(track.artists[0].id);
 			}
 		}
 
 		return [outTracks, outArtists];
+	}
+
+	private async saveUsedIdsInHistory(trackIds: string[]) {
+		const trackLen = trackIds.length;
+		const historyTrackIds = await this.feedStorageService.getTrackIdsHistory();
+		const currentLen = historyTrackIds.length;
+		const combinedLen = currentLen + trackLen;
+		const maxLen = FeedService.maxHistoryLen;
+
+		if (combinedLen > maxLen) {
+			historyTrackIds.splice(0, combinedLen - maxLen);
+		}
+		historyTrackIds.push(...trackIds);
+
+		return this.feedStorageService.storeTrackIdsHistory(historyTrackIds);
+	}
+
+	private scheduleLikesFlush() {
+		if (!this.likeBatchTimer) {
+			this.likeBatchTimer = setTimeout(
+				() => this.flushLikeBatch(),
+				FeedService.likeBatchThrottleMs
+			);
+		}
 	}
 }

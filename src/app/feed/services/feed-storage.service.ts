@@ -12,21 +12,31 @@ export class FeedStorageService {
 	private static readonly topArtistCountKey = 'count-top-artists';
 	private static readonly trackKey = 'feed-tracks';
 	private static readonly artistsKey = 'feed-artists';
+	private static readonly historyKey = 'history-tracks';
 
 	constructor(private readonly logger: LogService, private readonly storage: Storage) {}
 
+	async storeTrackIdsHistory(trackIds: string[]): Promise<void> {
+		await this.storage.set(FeedStorageService.historyKey, JSON.stringify(trackIds));
+		this.logger.log(LogLevel.trace, `New track ids history [${trackIds.length}] stored.`);
+	}
+
+	async getTrackIdsHistory(): Promise<string[]> {
+		return JSON.parse(await this.storage.get(FeedStorageService.historyKey)) || [];
+	}
+
 	async storeTopTrackCount(count: number): Promise<void> {
 		await this.storage.set(FeedStorageService.topTrackCountKey, JSON.stringify(count));
-		this.logger.log(LogLevel.trace, 'New top track count stored.');
+		this.logger.log(LogLevel.trace, `New top track count stored [${count}]`);
 	}
 
 	async getTopTrackCount(): Promise<number> {
-		return JSON.parse(await this.storage.get(FeedStorageService.topTrackCountKey || 0));
+		return JSON.parse(await this.storage.get(FeedStorageService.topTrackCountKey)) || 0;
 	}
 
 	async storeTrackSeeds(tracks: SpotifyApi.TrackObjectSimplified[]): Promise<void> {
 		await this.storage.set(FeedStorageService.trackKey, JSON.stringify(tracks));
-		this.logger.log(LogLevel.trace, 'New track seeds stored.');
+		this.logger.log(LogLevel.trace, `New track seeds stored [${tracks.length}].`);
 	}
 
 	async getTrackSeeds(): Promise<SpotifyApi.TrackObjectSimplified[] | undefined> {
@@ -35,18 +45,18 @@ export class FeedStorageService {
 
 	async storeTopArtistCount(count: number): Promise<void> {
 		await this.storage.set(FeedStorageService.topArtistCountKey, JSON.stringify(count));
-		this.logger.log(LogLevel.trace, 'New top artist count stored.');
+		this.logger.log(LogLevel.trace, `New top artist count stored [${count}].`);
 	}
 
 	async getTopArtistCount(): Promise<number> {
-		return JSON.parse(await this.storage.get(FeedStorageService.topArtistCountKey || 0));
+		return JSON.parse(await this.storage.get(FeedStorageService.topArtistCountKey)) || 0;
 	}
 
 	async storeArtistSeeds(
 		artists: (SpotifyApi.ArtistObjectFull | SpotifyApi.ArtistObjectSimplified)[]
 	): Promise<void> {
 		await this.storage.set(FeedStorageService.artistsKey, JSON.stringify(artists));
-		this.logger.log(LogLevel.trace, 'New artist seeds stored.');
+		this.logger.log(LogLevel.trace, `New artist seeds stored [${artists.length}].`);
 	}
 
 	async getArtistSeeds(): Promise<
@@ -55,13 +65,19 @@ export class FeedStorageService {
 		return JSON.parse(await this.storage.get(FeedStorageService.artistsKey));
 	}
 
-	async removeAll(): Promise<[void, void, void, void]> {
+	async removeAll(): Promise<[void, void, void, void, void]> {
 		return waitParallel(
 			this.removeTracks(),
 			this.removeTopTracksCount(),
 			this.removeArtists(),
-			this.removeTopArtistCount()
+			this.removeTopArtistCount(),
+			this.removeTrackIdsHistory()
 		);
+	}
+
+	private async removeTrackIdsHistory(): Promise<void> {
+		await this.storage.remove(FeedStorageService.historyKey);
+		this.logger.log(LogLevel.trace, 'Track history ids removed.');
 	}
 
 	private async removeTopTracksCount(): Promise<void> {

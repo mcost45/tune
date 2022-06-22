@@ -11,22 +11,9 @@ import { LoginService } from '../../../core/services/login.service';
 export class ProfileButtonComponent {
 	@Input() user$?: Observable<SpotifyApi.CurrentUsersProfileResponse | null>;
 	@Input() imageUrl$?: Observable<string | null>;
-
-	menuOpen = false;
+	@Input() triggerId?: string;
 
 	constructor(private readonly loginService: LoginService) {}
-
-	toggleMenu() {
-		this.menuOpen = !this.menuOpen;
-	}
-
-	onDismissMenu() {
-		this.menuOpen = false;
-	}
-
-	onOpenMenu() {
-		this.menuOpen = true;
-	}
 
 	async onLogin(): Promise<void> {
 		await this.loginService.initLogin();

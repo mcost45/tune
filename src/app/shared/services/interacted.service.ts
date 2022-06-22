@@ -26,7 +26,7 @@ export class InteractedService implements OnDestroy {
 		return this.interacted$;
 	}
 
-	init(): void {
+	init() {
 		this.zone.runOutsideAngular(() => {
 			merge(...InteractedService.waitForEvent.map((e) => fromEvent(document, e)))
 				.pipe(take(1), runInZone(this.zone), takeUntil(this.destroyedS))

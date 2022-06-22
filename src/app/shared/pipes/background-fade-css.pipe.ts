@@ -8,9 +8,9 @@ export class BackgroundFadeCssPipe implements PipeTransform {
 		value?: string | null,
 		strengthPercentage: number = 50,
 		degrees = 0
-	): Record<string, any> | undefined {
+	): Record<string, any> | null {
 		if (!value) {
-			return;
+			return null;
 		}
 
 		return {

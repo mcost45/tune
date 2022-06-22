@@ -9,6 +9,9 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
+@use './vars' as vars;
+@use 'sass:math';
+
 /* Core CSS required for Ionic components to work properly */
 @import '~@ionic/angular/css/core.css';
 
@@ -17,6 +20,79 @@
 @import '~@ionic/angular/css/structure.css';
 @import '~@ionic/angular/css/typography.css';
 @import '~@ionic/angular/css/display.css';
+
+@function strip-unit($value) {
+	@return math.div($value, ($value * 0 + 1));
+}
+
+@mixin fluid-type($min-vw, $max-vw, $min-font-size, $max-font-size) {
+	$u1: unit($min-vw);
+	$u2: unit($max-vw);
+	$u3: unit($min-font-size);
+	$u4: unit($max-font-size);
+
+	@if $u1 == $u2 and $u1 == $u3 and $u1 == $u4 {
+		& {
+			font-size: $min-font-size;
+			@media screen and (min-width: $min-vw) {
+				font-size: calc(
+					#{$min-font-size} + #{strip-unit($max-font-size - $min-font-size)} *
+						((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)})
+				);
+			}
+			@media screen and (min-width: $max-vw) {
+				font-size: $max-font-size;
+			}
+		}
+	}
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0;
+	font-size: inherit;
+	font-weight: inherit;
+}
+
+a {
+	color: inherit;
+}
+
+.inner-page {
+	display: flex;
+	position: relative;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	min-height: 100%;
+	gap: vars.$page-gap;
+	padding: vars.$page-padding;
+
+	> .title {
+		text-align: center;
+		white-space: pre-wrap;
+	}
+}
+
+.title {
+	font-weight: vars.$title-font-weight;
+	@include fluid-type(
+		vars.$title-min-width,
+		vars.$title-max-width,
+		vars.$title-min-size,
+		vars.$title-max-size
+	);
+}
+
+.text-content {
+	text-align: center;
+	white-space: pre-wrap;
+}
 
 .no-select {
 	user-select: none;
@@ -33,6 +109,11 @@
 	vertical-align: middle;
 }
 
+// Allows using mat-icons only without any other @angular/material usage, disabling the warning.
+.mat-theme-loaded-marker {
+	display: none;
+}
+
 @keyframes spin {
 	from {
 		transform: rotate(0deg);
@@ -40,9 +121,4 @@
 	to {
 		transform: rotate(360deg);
 	}
-}
-
-// Allows using mat-icons only without any other @angular/material usage, disabling the warning.
-.mat-theme-loaded-marker {
-	display: none;
 }

@@ -2,17 +2,17 @@
 @use '../../../../vars' as vars;
 
 :host {
-	will-change: transform;
+	will-change: transform, opacity;
 	position: absolute;
 	box-sizing: border-box;
 	height: min(#{vars.$feed-card-height}, 100%);
 	width: min(#{vars.$feed-card-width}, 100%);
 	contain: layout;
 	padding: vars.$feed-card-padding;
-	transition-property: transform;
+	transition-property: transform, opacity;
 	transition-timing-function: ease-in;
 	pointer-events: auto;
-	transform: perspective(none) rotateX(0deg) rotateY(0deg);
+	transform: perspective(none) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
 }
 
 .card-wrapper {
@@ -25,6 +25,7 @@
 	border-radius: vars.$border-radius;
 	overflow: hidden;
 	pointer-events: none;
+	box-shadow: vars.$feed-card-box-shadow;
 }
 
 .track-image {
@@ -62,15 +63,13 @@
 	overflow-y: auto;
 
 	&.is-first {
-		backdrop-filter: blur(2px);
+		backdrop-filter: blur(vars.$feed-card-track-image-blur);
 	}
 
 	.title {
 		display: inline-block;
 		width: 100%;
 		padding-bottom: vars.$feed-card-title-y-padding;
-		font-size: 4em;
-		font-weight: 700;
 		color: vars.$feed-card-text-colour;
 	}
 

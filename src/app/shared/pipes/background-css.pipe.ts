@@ -4,9 +4,9 @@ import { Pipe, PipeTransform } from '@angular/core';
 	name: 'backgroundCss'
 })
 export class BackgroundCssPipe implements PipeTransform {
-	transform(value?: string | null): Record<string, any> | undefined {
+	transform(value?: string | null): Record<string, any> | null {
 		if (!value) {
-			return;
+			return null;
 		}
 
 		return { backgroundImage: `${value}` };

@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import FastAverageColor from 'fast-average-color';
+import { FastAverageColor } from 'fast-average-color';
 import { from, map, Observable } from 'rxjs';
 
 @Injectable({

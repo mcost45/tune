@@ -2,9 +2,9 @@
 	<ng-container
 		[ngTemplateOutlet]="recommendation ? hasRecommendation : recommendationError"
 		[ngTemplateOutletContext]="{
-			track: recommendation.track,
-			artist: recommendation.primaryArtist,
-			features: recommendation.features
+			track: recommendation?.track,
+			artist: recommendation?.primaryArtist,
+			features: recommendation?.features
 		}"
 	></ng-container>
 </ion-card>
@@ -36,19 +36,19 @@
 				<img
 					[src]="artist | artistImage"
 					[ngClass]="{ 'is-first': isFirst }"
+					[alt]="'ALT_TEXT.ARTIST_IMAGE' | translate"
 					class="artist-image"
-					alt="Artist Image"
 					fetchpriority="low"
 					draggable="false"
 				/>
-				{{ track.artists | artistNames | commaJoin }}
+				<h2>{{ track.artists | artistNames | commaJoin }}</h2>
 			</ion-card-subtitle>
-			<ion-card-title class="title hyphenate"
-				>{{ track.name | truncateString: maxTitleCharLen
-				}}<span *ngIf="track.explicit"
-					>&nbsp;<mat-icon>explicit</mat-icon></span
-				></ion-card-title
-			>
+			<ion-card-title class="title hyphenate">
+				<h3>
+					{{ track.name | truncateString: maxTitleCharLen }}
+					<span *ngIf="track.explicit">&nbsp;<mat-icon>explicit</mat-icon></span>
+				</h3>
+			</ion-card-title>
 		</ion-card-header>
 	</ng-template>
 

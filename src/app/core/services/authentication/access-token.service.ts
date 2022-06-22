@@ -109,6 +109,7 @@ export class AccessTokenService {
 			body: new URLSearchParams(params)
 		});
 		const body: TokenSetProps = await response.json();
+
 		AccessTokenService.checkResponseForErrors(response, body);
 
 		const accessToken = body[TokenSetKeys.accessToken];

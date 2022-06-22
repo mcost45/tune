@@ -1,2 +1,9 @@
-<app-header [titleKey]="'APP.TITLE'"></app-header>
-<ion-content [fullscreen]="true">{{ 'APP.LOGIN_FAILED_MSG' | translate }}</ion-content>
+<ion-header class="ion-no-border">
+	<app-header [titleKey]="'APP.TITLE'"></app-header>
+</ion-header>
+<ion-content>
+	<div class="inner-page">
+		<div class="title">{{ 'APP.LOGIN_FAILED_MSG' | translate }}</div>
+	</div>
+</ion-content>
+<ion-footer class="ion-no-border"><app-footer></app-footer></ion-footer>

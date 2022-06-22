@@ -1,0 +1,6 @@
+@use '../../../../../vars' as vars;
+
+video {
+	width: vars.$landing-video-width;
+	border-radius: vars.$border-radius;
+}

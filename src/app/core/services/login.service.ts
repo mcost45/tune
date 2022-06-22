@@ -40,17 +40,23 @@ export class LoginService {
 	}
 
 	async onCompletedLogin(): Promise<void> {
-		const user = await this.spotifyService.getUser();
-		if (user) {
-			await this.userService.setUser(user);
-			this.logger.log(LogLevel.trace, 'Completed login.');
-			return this.redirectToSuccessPage();
-		}
+		try {
+			const user = await this.spotifyService.getUser();
 
-		throw new Error(LoginService.noUser);
+			if (user) {
+				await this.userService.setUser(user);
+				this.logger.log(LogLevel.trace, 'Completed login.');
+				return this.redirectToSuccessPage();
+			}
+
+			throw new Error(LoginService.noUser);
+		} catch (e) {
+			return this.onFailedLogin();
+		}
 	}
 
-	async onFailedLogin(error: string): Promise<void> {
+	async onFailedLogin(error?: string | null): Promise<void> {
+		await this.userService.removeUser();
 		await this.redirectToFailedPage(error);
 	}
 
@@ -65,8 +71,10 @@ export class LoginService {
 		await this.router.navigateByUrl(authConfig.postSuccessRoute);
 	}
 
-	private async redirectToFailedPage(error: string): Promise<void> {
-		this.logger.log(LogLevel.error, error);
+	private async redirectToFailedPage(error?: string | null): Promise<void> {
+		if (error) {
+			this.logger.log(LogLevel.error, error);
+		}
 		const authConfig = this.configService.config.auth;
 		await this.router.navigateByUrl(authConfig.postFailedRoute);
 	}

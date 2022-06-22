@@ -20,6 +20,7 @@ import {
 	takeUntil,
 	withLatestFrom
 } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { FeedService } from '../../services/feed.service';
 import { FeedSeedService } from '../../services/feed-seed.service';
 import { LogService } from '../../../shared/services/utility/log.service';
@@ -28,6 +29,7 @@ import { runInZone } from '../../../utility/run-in-zone';
 import { RecommendedCard } from '../../domain/recommended-card';
 import { FeedCardComponent } from '../feed-card/feed-card.component';
 import 'hammerjs';
+import { HapticService } from '../../../shared/services/haptic.service';
 
 @Component({
 	selector: 'app-feed-list',
@@ -38,33 +40,42 @@ import 'hammerjs';
 })
 export class FeedListComponent implements OnInit, OnDestroy {
 	private static readonly maxActiveLen = 10;
-	private static readonly minSwipeVelocity = 1.25;
+	private static readonly fetchBelowLen = Math.ceil(FeedListComponent.maxActiveLen * 0.75);
+	private static readonly fetchLen = Math.ceil(FeedListComponent.maxActiveLen * 2.5);
+	private static readonly minSwipeVelocity = 1.5;
 	private static readonly swipedNewDelayMs = 100;
-	private static readonly transitionDurationMs = '200ms';
+	private static readonly minDragOpacity = 0.3;
+	private static readonly moveTransitionDurationMs = '100ms';
+	private static readonly hoverTransitionDurationMs = '50ms';
 
 	@ViewChildren(FeedCardComponent, { read: ElementRef }) cardElements?: QueryList<
 		ElementRef<HTMLElement>
 	>;
 
 	activeCards$: Observable<RecommendedCard[]>;
-	transitionDurationMs = FeedListComponent.transitionDurationMs;
+
+	transitionDurationMs = FeedListComponent.moveTransitionDurationMs;
 
 	private readonly activeCardsS = new BehaviorSubject<RecommendedCard[]>([]);
+	private readonly cardQueueS = new BehaviorSubject<RecommendedCard[]>([]);
 	private readonly destroyedS = new ReplaySubject(1);
 
-	private cardQueue: RecommendedCard[] = [];
 	private hammer?: HammerManager;
 	private isDragging = false;
 	private hasSwiped = false;
+	private isResetting = false;
+	private isHovering = false;
 
 	constructor(
 		private readonly logger: LogService,
 		private readonly feedService: FeedService,
+		private readonly hapticService: HapticService,
 		private readonly zone: NgZone,
 		private readonly renderer: Renderer2,
 		private readonly self: ElementRef
 	) {
 		this.activeCards$ = this.activeCardsS.asObservable();
+		this.feedService.setFetchAmount(FeedListComponent.fetchLen);
 	}
 
 	ngOnInit() {
@@ -84,24 +95,31 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		return item.track.id;
 	}
 
-	private setupObservables(): void {
+	private setupObservables() {
 		this.zone.runOutsideAngular(() => {
 			this.feedService.recommendedCards$
 				.pipe(
 					withLatestFrom(this.activeCardsS),
+					withLatestFrom(this.cardQueueS),
+					map(([[newCards, activeCards], queuedCards]) => [
+						newCards,
+						activeCards,
+						queuedCards
+					]),
 					runInZone(this.zone),
 					takeUntil(this.destroyedS)
 				)
-				.subscribe(([newCards, activeCards]) => {
-					this.cardQueue.push(...newCards);
+				.subscribe(([newCards, activeCards, queuedCards]) => {
+					let newQueuedCards = [...queuedCards, ...newCards];
 
-					const maxActiveLen = FeedListComponent.maxActiveLen;
-					console.log(activeCards);
-					if (activeCards.length < maxActiveLen) {
+					if (!activeCards.length) {
 						this.activeCardsS.next(
-							[...activeCards, ...newCards].slice(0, maxActiveLen)
+							newQueuedCards.slice(0, FeedListComponent.maxActiveLen)
 						);
+						newQueuedCards = newQueuedCards.slice(FeedListComponent.maxActiveLen);
 					}
+
+					this.cardQueueS.next(newQueuedCards);
 				});
 
 			const isInitiated$ = this.feedService.isInitiated$.pipe(
@@ -109,13 +127,16 @@ export class FeedListComponent implements OnInit, OnDestroy {
 				take(1)
 			);
 
-			combineLatest([this.activeCardsS, isInitiated$])
+			combineLatest([this.cardQueueS, isInitiated$])
 				.pipe(
-					map(([cards]) => cards.length),
-					filter((cardLen) => cardLen < 3),
+					map(([queuedCards]) => queuedCards.length),
+					tap((queueLen) =>
+						this.logger.log(LogLevel.trace, `${queueLen} tracks remaining in queue.`)
+					),
+					filter((queueLen) => queueLen < FeedListComponent.fetchBelowLen),
 					takeUntil(this.destroyedS)
 				)
-				.subscribe((activeCardLen) => {
+				.subscribe(() => {
 					this.feedService.triggerRecommendations();
 				});
 
@@ -125,9 +146,12 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 	private onHover(event: MouseEvent | TouchEvent) {
 		const card = this.getTopCardEl();
-		if (!card || this.isDragging || this.hasSwiped) {
+
+		if (!card || this.isDragging || this.hasSwiped || this.isResetting) {
 			return;
 		}
+
+		this.isHovering = true;
 
 		const { clientWidth, clientHeight, offsetLeft, offsetTop } = card;
 
@@ -150,8 +174,13 @@ export class FeedListComponent implements OnInit, OnDestroy {
 			const rotateX = threshold / 2 - horizontal * threshold;
 			const rotateY = vertical * threshold - threshold / 2;
 
-			const cardTransform = `perspective(${clientWidth}px) rotateX(${rotateY}deg) rotateY(${rotateX}deg)`;
+			const cardTransform = `perspective(${clientWidth}px) rotateX(${rotateY}deg) rotateY(${rotateX}deg) rotateZ(0deg)`;
 			this.renderer.setStyle(card, 'transform', cardTransform);
+			this.renderer.setStyle(
+				card,
+				'transition-duration',
+				FeedListComponent.hoverTransitionDurationMs
+			);
 		});
 	}
 
@@ -161,7 +190,9 @@ export class FeedListComponent implements OnInit, OnDestroy {
 			return;
 		}
 
+		this.isHovering = false;
 		this.isDragging = true;
+		this.hapticService.onSelectionStart();
 
 		requestAnimationFrame(() => {
 			this.renderer.removeStyle(card, 'transition-duration');
@@ -175,11 +206,19 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		}
 
 		requestAnimationFrame(() => {
-			const { deltaX, deltaY } = event;
+			const { deltaX, deltaY, distance, direction } = event;
+			const isPanningLeft = direction === Hammer.DIRECTION_LEFT;
+			const negativeDeltaX = deltaX < 0;
+
 			const withoutTranslate = this.getCardTransformExcludingTranslation(card);
 			const cardTransform = `${withoutTranslate} translate(${deltaX}px, ${deltaY}px)`;
+			const opacity =
+				isPanningLeft && negativeDeltaX
+					? Math.max((1 / distance) * 100, FeedListComponent.minDragOpacity)
+					: 1;
 
 			this.renderer.setStyle(card, 'transform', cardTransform);
+			this.renderer.setStyle(card, 'opacity', opacity);
 		});
 	}
 
@@ -194,71 +233,92 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		const aboveThreshold = absVelocityX > FeedListComponent.minSwipeVelocity;
 		const wasLike = velocityX > 0;
 
-		this.activeCards$.pipe(take(1), takeUntil(this.destroyedS)).subscribe((activeCards) => {
-			if (aboveThreshold) {
-				this.hasSwiped = true;
-
-				const track = activeCards[0].track;
-				if (track) {
-					if (wasLike) {
-						this.onLikeTrack(track);
-					} else {
-						this.onDislikeTrack(track);
-					}
-				}
-			}
-
-			requestAnimationFrame(() => {
-				const duration = FeedListComponent.transitionDurationMs;
-				const withoutTranslate = this.getCardTransformExcludingTranslation(card, true);
-
-				let translateX: string;
+		this.activeCards$
+			.pipe(take(1), withLatestFrom(this.cardQueueS), takeUntil(this.destroyedS))
+			.subscribe(([activeCards, queuedCards]) => {
 				if (aboveThreshold) {
-					translateX = wasLike ? '200%' : '-200%';
-				} else {
-					translateX = '0px';
+					this.hasSwiped = true;
+					this.hapticService.onSelectionEnd();
+
+					const track = activeCards[0].track;
+					if (track) {
+						if (wasLike) {
+							this.onLikeTrack(track);
+						} else {
+							this.onDislikeTrack(track);
+						}
+					}
 				}
 
-				const cardTransform = `${withoutTranslate} translate(${translateX}, 0px)`;
+				requestAnimationFrame(() => {
+					this.isDragging = false;
 
-				this.renderer.setStyle(card, 'transition-duration', duration);
-				this.renderer.setStyle(card, 'transform', cardTransform);
+					const duration = FeedListComponent.moveTransitionDurationMs;
+					const withoutTranslate = this.getCardTransformExcludingTranslation(card, true);
 
-				setTimeout(() => {
+					let translateX: string;
 					if (aboveThreshold) {
-						console.log([...activeCards]);
-						const [_, ...shiftedCards] = activeCards;
-						console.log(_, [...activeCards]);
-						this.zone.run(() => {
-							this.activeCardsS.next(shiftedCards);
-						});
+						translateX = wasLike ? '300%' : '-300%';
+						this.isResetting = false;
+					} else {
+						translateX = '0px';
+						this.isResetting = true;
 					}
 
-					requestAnimationFrame(() => {
-						this.renderer.setStyle(
-							card,
-							'transform',
-							this.getCardTransformExcludingTranslation(card, true)
-						);
-						this.renderer.removeStyle(card, 'transition-duration');
-						this.isDragging = false;
-						this.hasSwiped = false;
-					});
-				}, parseInt(duration, 10) + FeedListComponent.swipedNewDelayMs);
+					const cardTransform = `${withoutTranslate} translate(${translateX}, 0px)`;
+
+					this.renderer.setStyle(card, 'transition-duration', duration);
+					this.renderer.setStyle(card, 'transform', cardTransform);
+
+					setTimeout(() => {
+						if (aboveThreshold) {
+							const newActiveCards = activeCards.slice(1);
+							const newQueuedCards = queuedCards.slice(1);
+
+							if (newQueuedCards.length > 1) {
+								newActiveCards.push(newQueuedCards[0]);
+							}
+
+							this.zone.run(() => {
+								this.cardQueueS.next(newQueuedCards);
+								this.activeCardsS.next(newActiveCards);
+							});
+						}
+
+						requestAnimationFrame(() => {
+							this.hasSwiped = false;
+							this.isResetting = false;
+
+							this.renderer.setStyle(
+								card,
+								'transform',
+								this.getCardTransformExcludingTranslation(card, true)
+							);
+							this.renderer.setStyle(card, 'opacity', 1);
+							this.renderer.removeStyle(card, 'transition-duration');
+						});
+					}, parseInt(duration, 10) + FeedListComponent.swipedNewDelayMs);
+				});
 			});
-		});
 	}
 
-	private onLikeTrack(track: SpotifyApi.TrackObjectSimplified): Promise<[void, void]> {
-		this.logger.log(LogLevel.trace, `Liked track '${track.name}'`);
+	private onVisibilityChange() {
+		if (document.visibilityState === 'hidden') {
+			this.feedService.flushLikeBatch();
+		}
+	}
+
+	private onLikeTrack(track: SpotifyApi.TrackObjectSimplified): Promise<[void, void, void]> {
+		this.logger.log(LogLevel.trace, `Liked track '${track.name}.'`);
 		return this.feedService.likeTrack(track);
 	}
 
-	private onDislikeTrack(track: SpotifyApi.TrackObjectSimplified) {
-		this.logger.log(LogLevel.trace, `Disliked track '${track.name}'`);
+	private onDislikeTrack(track: SpotifyApi.TrackObjectSimplified): Promise<void> {
+		this.logger.log(LogLevel.trace, `Disliked track '${track.name}.'`);
+		return this.feedService.dislikeTrack(track);
 	}
 
-	private prepareHammer(): void {
+	private prepareHammer() {
 		this.zone.runOutsideAngular(() => {
 			this.hammer = new Hammer.Manager(this.self.nativeElement, {
 				recognizers: [[Hammer.Pan]]
@@ -266,7 +326,7 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		});
 	}
 
-	private addZoneExternalEventListeners(): void {
+	private addZoneExternalEventListeners() {
 		this.zone.runOutsideAngular(() => {
 			const element = this.self.nativeElement;
 			element.addEventListener('mousemove', this.onHover.bind(this));
@@ -274,14 +334,16 @@ export class FeedListComponent implements OnInit, OnDestroy {
 			this.hammer?.on('panstart', this.onPanStart.bind(this));
 			this.hammer?.on('pan', this.onPan.bind(this));
 			this.hammer?.on('panend pancancel', this.onPanEnd.bind(this));
+			document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
 		});
 	}
 
-	private removeZoneExternalEventListeners(): void {
+	private removeZoneExternalEventListeners() {
 		const element = this.self.nativeElement;
 		element.removeEventListener('mousemove', this.onHover);
 		element.removeEventListener('touchstart', this.onHover);
 		this.hammer?.destroy();
+		document.removeEventListener('visibilitychange', this.onVisibilityChange);
 	}
 
 	private getTopCardEl(): HTMLElement | undefined {
@@ -293,10 +355,12 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		const values = prevTransform.split(' ');
 
 		if (resetRotation) {
+			values[0] = 'perspective(none)';
 			values[1] = 'rotateX(0deg)';
 			values[2] = 'rotateY(0deg)';
+			values[3] = 'rotateZ(0deg)';
 		}
 
-		return values.slice(0, 3).join(' ');
+		return values.slice(0, 4).join(' ');
 	}
 }

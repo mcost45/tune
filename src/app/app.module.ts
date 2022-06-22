@@ -1,4 +1,4 @@
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { APP_INITIALIZER, ErrorHandler, NgModule } from '@angular/core';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -13,6 +13,7 @@ import { CoreModule } from './core/core.module';
 import { SharedModule } from './shared/shared.module';
 import { AppRoutingModule } from './routing/app-routing.module';
 import { AppComponent } from './app.component';
+import { LogService } from './shared/services/utility/log.service';
 
 const ii8nDefaultLanguage = 'en';
 const ii8nLoadPrefix = './assets/ii8n/';
@@ -35,7 +36,9 @@ const appFactory = (translateService: TranslateService) => {
 @NgModule({
 	declarations: [AppComponent],
 	imports: [
-		IonicModule.forRoot(),
+		IonicModule.forRoot({
+			mode: 'md'
+		}),
 		IonicStorageModule.forRoot(),
 		TranslateModule.forRoot({
 			loader: {
@@ -56,15 +59,16 @@ const appFactory = (translateService: TranslateService) => {
 	],
 	providers: [
 		{
-			provide: RouteReuseStrategy,
-			useClass: IonicRouteStrategy
-		},
-		{
 			provide: APP_INITIALIZER,
 			useFactory: appFactory,
 			deps: [TranslateService],
 			multi: true
-		}
+		},
+		{
+			provide: RouteReuseStrategy,
+			useClass: IonicRouteStrategy
+		},
+		{ provide: ErrorHandler, useClass: LogService }
 	],
 	bootstrap: [AppComponent]
 })

@@ -1,2 +1,18 @@
-<app-header [titleKey]="'APP.TITLE'"></app-header>
-<ion-content [fullscreen]="true">Home page</ion-content>
+<ion-header class="ion-no-border">
+	<app-header [titleKey]="'APP.TITLE'"></app-header>
+</ion-header>
+<ion-content>
+	<div class="inner-page">
+		<video src="assets/preview.mp4" autoplay muted loop playsinline controls></video>
+		<ion-button size="large" shape="round" fill="outline" color="dark" (click)="onOpenFeed()">
+			{{ 'ACTIONS.OPEN_FEED' | translate }}
+		</ion-button>
+		<div class="title">
+			<h2>{{ 'LANDING_CONTENT.DESCRIPTION' | translate }}</h2>
+		</div>
+		<div class="text-content">
+			{{ 'LANDING_CONTENT.SUB_DESCRIPTION' | translate }}
+		</div>
+	</div>
+</ion-content>
+<ion-footer class="ion-no-border"><app-footer></app-footer></ion-footer>

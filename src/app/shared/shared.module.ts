@@ -18,6 +18,7 @@ import { ImageColourUrlPipe } from './pipes/image-colour-url.pipe';
 import { BackgroundCssPipe } from './pipes/background-css.pipe';
 import { BackgroundFadeCssPipe } from './pipes/background-fade-css.pipe';
 import { TruncateStringPipe } from './pipes/truncate-string.pipe';
+import { FooterComponent } from './components/footer/footer.component';
 
 @NgModule({
 	imports: [
@@ -38,6 +39,7 @@ import { TruncateStringPipe } from './pipes/truncate-string.pipe';
 		TranslateModule,
 		MatIconModule,
 		HeaderComponent,
+		FooterComponent,
 		CommaJoinPipe,
 		BackgroundUrlCssPipe,
 		BackgroundCssPipe,
@@ -49,6 +51,7 @@ import { TruncateStringPipe } from './pipes/truncate-string.pipe';
 	],
 	declarations: [
 		HeaderComponent,
+		FooterComponent,
 		CssUrlPipe,
 		ProfileButtonComponent,
 		ProfileMenuComponent,

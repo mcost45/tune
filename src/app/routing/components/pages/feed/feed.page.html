@@ -1,2 +1,5 @@
-<app-header [titleKey]="'APP.TITLE'"></app-header>
-<ion-content [fullscreen]="true"><app-feed-list></app-feed-list></ion-content>
+<ion-header class="ion-no-border">
+	<app-header [titleKey]="'APP.TITLE'"></app-header>
+</ion-header>
+<ion-content><app-feed-list class="inner-page"></app-feed-list> </ion-content>
+<ion-footer class="ion-no-border"><app-footer></app-footer></ion-footer>

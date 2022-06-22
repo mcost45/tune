@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { ErrorHandler, Injectable } from '@angular/core';
 import { LogLevel } from '../../domain/utility/log-level';
 import { ConfigService } from './config.service';
 
@@ -6,15 +6,19 @@ import { ConfigService } from './config.service';
 	providedIn: 'root'
 })
 // Performs simple logging.
-export class LogService {
+export class LogService implements ErrorHandler {
+	private static readonly unknownClientError = 'An unknown client error occurred.';
+
+	/* eslint-disable no-console */
 	private static levelToLogCall: Map<LogLevel, (output: string) => void> = new Map([
 		[LogLevel.error, console.error],
 		[LogLevel.warn, console.warn],
-		[LogLevel.info, console.log],
-		[LogLevel.trace, console.log]
+		[LogLevel.info, console.info],
+		[LogLevel.trace, console.info]
 	]);
+	/* eslint-enable no-console */
 
-	private logToLevel: number | undefined;
+	private logToLevel = LogLevel.disabled;
 
 	constructor(private readonly configService: ConfigService) {}
 
@@ -33,7 +37,7 @@ export class LogService {
 
 	log(level: LogLevel, message: string) {
 		const logLevel = this.logToLevel;
-		if (logLevel && level > logLevel) {
+		if (logLevel !== undefined && level > logLevel) {
 			return;
 		}
 
@@ -41,5 +45,31 @@ export class LogService {
 		const logCall = LogService.levelToLogCall.get(level) as (output: string) => void;
 
 		logCall(output);
+	}
+
+	handleError(error: any) {
+		this.log(LogLevel.error, this.mapErrorToMessage(error));
+	}
+
+	private mapErrorToMessage(error: any): string {
+		let out = '';
+
+		if (error?.rejection) {
+			out += error.rejection;
+		}
+
+		if (error?.message) {
+			out += `\n${error.message}`;
+		}
+
+		if (error?.stack) {
+			out += `\n${error.stack}`;
+		}
+
+		if (out.length) {
+			return out;
+		}
+
+		return LogService.unknownClientError;
 	}
 }

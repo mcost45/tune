@@ -18,6 +18,8 @@ import { waitTime } from '../../../utility/wait-time';
 import { runOutsideZone } from '../../../utility/run-outside-zone';
 import { runInZone } from '../../../utility/run-in-zone';
 import { ConfigService } from '../../../shared/services/utility/config.service';
+import { LogService } from '../../../shared/services/utility/log.service';
+import { LogLevel } from '../../../shared/domain/utility/log-level';
 
 @Component({
 	selector: 'app-feed-card',
@@ -42,6 +44,7 @@ export class FeedCardComponent implements OnInit, OnChanges, OnDestroy {
 
 	constructor(
 		private readonly zone: NgZone,
+		private readonly logger: LogService,
 		private readonly configService: ConfigService,
 		private readonly interactedService: InteractedService,
 		private readonly renderer: Renderer2,
@@ -73,6 +76,7 @@ export class FeedCardComponent implements OnInit, OnChanges, OnDestroy {
 
 	private prepCard() {
 		this.isFirst = this.index === 0;
+		this.previewAudio?.pause();
 
 		this.zone.runOutsideAngular(() => {
 			this.prepAudioIfFirst();
@@ -95,7 +99,9 @@ export class FeedCardComponent implements OnInit, OnChanges, OnDestroy {
 					filter((hasInteracted) => hasInteracted),
 					tap(async () => {
 						await waitTime(50);
-						await this.previewAudio?.play();
+						await this.previewAudio
+							?.play()
+							.catch((e) => this.logger.log(LogLevel.error, e));
 						this.prepAudioProgress();
 					}),
 					retry(1),
@@ -144,10 +150,9 @@ export class FeedCardComponent implements OnInit, OnChanges, OnDestroy {
 
 					setTimeout(() => {
 						requestAnimationFrame(() => {
-							this.renderer.setStyle(
+							this.renderer.removeStyle(
 								this.self.nativeElement,
-								'transition-duration',
-								'0s'
+								'transition-duration'
 							);
 						});
 					}, parseInt(duration, 10));

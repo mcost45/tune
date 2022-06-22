@@ -55,7 +55,7 @@ export class AuthCallbackService {
 			});
 			storedCodeVerifier = stored.codeVerifier;
 		} catch (e) {
-			return this.loginService.onFailedLogin(error || '');
+			return this.loginService.onFailedLogin(error);
 		}
 
 		await this.beginLogin(code as string, storedCodeVerifier);
@@ -80,14 +80,20 @@ export class AuthCallbackService {
 	private async beginLogin(code: string, codeVerifier: string): Promise<void> {
 		const authConfig = this.configService.config.auth;
 
-		await this.accessTokenService.generateInitialAccessToken({
-			clientId: authConfig.clientId,
-			code,
-			codeVerifier,
-			grantType: 'authorization_code',
-			redirectUri: `${location.origin}/${authConfig.relRedirectUri}`
-		});
+		this.logger.log(LogLevel.trace, 'Beginning login.');
 
-		await this.loginService.onCompletedLogin();
+		try {
+			await this.accessTokenService.generateInitialAccessToken({
+				clientId: authConfig.clientId,
+				code,
+				codeVerifier,
+				grantType: 'authorization_code',
+				redirectUri: `${location.origin}/${authConfig.relRedirectUri}`
+			});
+
+			await this.loginService.onCompletedLogin();
+		} catch (e) {
+			return this.loginService.onFailedLogin();
+		}
 	}
 }
