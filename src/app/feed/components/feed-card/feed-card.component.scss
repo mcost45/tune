@@ -4,7 +4,6 @@
 :host {
 	will-change: transform, opacity;
 	position: absolute;
-	box-sizing: border-box;
 	height: min(#{vars.$feed-card-height}, 100%);
 	width: min(#{vars.$feed-card-width}, 100%);
 	contain: layout;

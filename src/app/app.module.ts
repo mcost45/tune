@@ -27,7 +27,7 @@ const appFactory = (translateService: TranslateService) => {
 	return () =>
 		new Promise<void>((resolve) => {
 			translateService.setDefaultLang(ii8nDefaultLanguage);
-			translateService.use(ii8nDefaultLanguage);
+			translateService.use(translateService.getBrowserLang() || ii8nDefaultLanguage);
 
 			resolve();
 		});

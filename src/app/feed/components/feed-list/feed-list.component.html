@@ -6,3 +6,7 @@
 	[transitionDurationMs]="transitionDurationMs"
 	[ngStyle]="i | cardOffset"
 ></app-feed-card>
+
+<div *ngIf="(hasInteracted$ | async) === false" class="requires-interaction title">
+	{{ 'ACTIONS.CLICK_TO_BEGIN' | translate }}
+</div>

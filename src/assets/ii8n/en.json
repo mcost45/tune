@@ -11,21 +11,23 @@
 		"LOGIN_FAILED_MSG": "Sorry, your login failed. Please try again.",
 		"PAGE_NOT_FOUND_MSG": "Page not found!"
 	},
-	"LANDING_CONTENT": {
+	"LANDING": {
 		"DESCRIPTION": "Swipe to find new music,\nbased on your favourite Spotify tunes.",
 		"SUB_DESCRIPTION": "Swipe right to save a tune in your Spotify 'Liked Songs'.\nThe track will be used to find more recommendations.\nIf you don't like the track, swipe left."
 	},
-	"FOOTER_CONTENT": {
-		"START": "Created with ❤️ by Matthew Costello",
-		"END": "View the public code repository"
+	"FOOTER": {
+		"CREATED_BY": "Created by",
+		"ME": "Matthew Costello 🎶"
 	},
 	"ACTIONS": {
 		"LOGIN": "Login",
 		"LOGOUT": "Logout",
-		"OPEN_FEED": "Start swiping"
+		"OPEN_FEED": "Start swiping",
+		"CLICK_TO_BEGIN": "Click to begin"
 	},
 	"ALT_TEXT": {
-		"ARTIST_IMAGE": "Artist Image"
+		"ARTIST_IMAGE": "Artist Image",
+		"VIEW_REPO": "View the public code repository"
 	},
 	"CATEGORIES": {
 		"HOT": "Popular 🔥",

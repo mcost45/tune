@@ -30,6 +30,7 @@ import { RecommendedCard } from '../../domain/recommended-card';
 import { FeedCardComponent } from '../feed-card/feed-card.component';
 import 'hammerjs';
 import { HapticService } from '../../../shared/services/haptic.service';
+import { InteractedService } from '../../../shared/services/interacted.service';
 
 @Component({
 	selector: 'app-feed-list',
@@ -52,7 +53,8 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		ElementRef<HTMLElement>
 	>;
 
-	activeCards$: Observable<RecommendedCard[]>;
+	activeCards$!: Observable<RecommendedCard[]>;
+	hasInteracted$!: Observable<boolean>;
 
 	transitionDurationMs = FeedListComponent.moveTransitionDurationMs;
 
@@ -61,8 +63,9 @@ export class FeedListComponent implements OnInit, OnDestroy {
 	private readonly destroyedS = new ReplaySubject(1);
 
 	private hammer?: HammerManager;
-	private isDragging = false;
+
 	private hasSwiped = false;
+	private isDragging = false;
 	private isResetting = false;
 	private isHovering = false;
 
@@ -70,12 +73,12 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		private readonly logger: LogService,
 		private readonly feedService: FeedService,
 		private readonly hapticService: HapticService,
+		private readonly interactedService: InteractedService,
 		private readonly zone: NgZone,
 		private readonly renderer: Renderer2,
 		private readonly self: ElementRef
 	) {
-		this.activeCards$ = this.activeCardsS.asObservable();
-		this.feedService.setFetchAmount(FeedListComponent.fetchLen);
+		this.setupVars();
 	}
 
 	ngOnInit() {
@@ -86,13 +89,17 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 	ngOnDestroy() {
 		this.removeZoneExternalEventListeners();
-
-		this.destroyedS.next(true);
-		this.destroyedS.complete();
+		this.cleanObservables();
 	}
 
 	trackById(index: number, item: RecommendedCard): string {
 		return item.track.id;
+	}
+
+	private setupVars() {
+		this.hasInteracted$ = this.interactedService.hasInteracted$;
+		this.activeCards$ = this.activeCardsS.asObservable();
+		this.feedService.setFetchAmount(FeedListComponent.fetchLen);
 	}
 
 	private setupObservables() {
@@ -144,14 +151,17 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		});
 	}
 
+	private cleanObservables() {
+		this.destroyedS.next(true);
+		this.destroyedS.complete();
+	}
+
 	private onHover(event: MouseEvent | TouchEvent) {
 		const card = this.getTopCardEl();
 
 		if (!card || this.isDragging || this.hasSwiped || this.isResetting) {
 			return;
 		}
-
-		this.isHovering = true;
 
 		const { clientWidth, clientHeight, offsetLeft, offsetTop } = card;
 
@@ -166,15 +176,26 @@ export class FeedListComponent implements OnInit, OnDestroy {
 			posY = (event as MouseEvent).clientY;
 		}
 
-		requestAnimationFrame(() => {
-			const horizontal = (posX - offsetLeft) / clientWidth;
-			const vertical = (posY - offsetTop) / clientHeight;
+		const horizontal = (posX - offsetLeft) / clientWidth;
+		const vertical = (posY - offsetTop) / clientHeight;
 
+		this.isHovering = true;
+
+		this.applyHover(card, horizontal, vertical, clientWidth);
+	}
+
+	private applyHover(
+		card: HTMLElement,
+		horizontal: number,
+		vertical: number,
+		clientWidth: number
+	) {
+		requestAnimationFrame(() => {
 			const threshold = 8;
 			const rotateX = threshold / 2 - horizontal * threshold;
 			const rotateY = vertical * threshold - threshold / 2;
-
 			const cardTransform = `perspective(${clientWidth}px) rotateX(${rotateY}deg) rotateY(${rotateX}deg) rotateZ(0deg)`;
+
 			this.renderer.setStyle(card, 'transform', cardTransform);
 			this.renderer.setStyle(
 				card,
@@ -192,8 +213,12 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 		this.isHovering = false;
 		this.isDragging = true;
-		this.hapticService.onSelectionStart();
 
+		this.hapticService.onSelectionStart();
+		this.applyPanStart(card);
+	}
+
+	private applyPanStart(card: HTMLElement) {
 		requestAnimationFrame(() => {
 			this.renderer.removeStyle(card, 'transition-duration');
 		});
@@ -205,6 +230,10 @@ export class FeedListComponent implements OnInit, OnDestroy {
 			return;
 		}
 
+		this.applyPan(card, event);
+	}
+
+	private applyPan(card: HTMLElement, event: HammerInput) {
 		requestAnimationFrame(() => {
 			const { deltaX, deltaY, distance, direction } = event;
 			const isPanningLeft = direction === Hammer.DIRECTION_LEFT;
@@ -238,6 +267,7 @@ export class FeedListComponent implements OnInit, OnDestroy {
 			.subscribe(([activeCards, queuedCards]) => {
 				if (aboveThreshold) {
 					this.hasSwiped = true;
+
 					this.hapticService.onSelectionEnd();
 
 					const track = activeCards[0].track;
@@ -250,56 +280,72 @@ export class FeedListComponent implements OnInit, OnDestroy {
 					}
 				}
 
-				requestAnimationFrame(() => {
-					this.isDragging = false;
+				this.applyPanEndInitial(card, aboveThreshold, wasLike, activeCards, queuedCards);
+			});
+	}
 
-					const duration = FeedListComponent.moveTransitionDurationMs;
-					const withoutTranslate = this.getCardTransformExcludingTranslation(card, true);
+	private applyPanEndInitial(
+		card: HTMLElement,
+		aboveThreshold: boolean,
+		wasLike: boolean,
+		activeCards: RecommendedCard[],
+		queuedCards: RecommendedCard[]
+	) {
+		requestAnimationFrame(() => {
+			const duration = FeedListComponent.moveTransitionDurationMs;
+			const withoutTranslate = this.getCardTransformExcludingTranslation(card, true);
 
-					let translateX: string;
-					if (aboveThreshold) {
-						translateX = wasLike ? '300%' : '-300%';
-						this.isResetting = false;
-					} else {
-						translateX = '0px';
-						this.isResetting = true;
+			let translateX: string;
+			if (aboveThreshold) {
+				translateX = wasLike ? '300%' : '-300%';
+				this.isResetting = false;
+			} else {
+				translateX = '0px';
+				this.isResetting = true;
+			}
+
+			const cardTransform = `${withoutTranslate} translate(${translateX}, 0px)`;
+
+			this.isDragging = false;
+
+			this.renderer.setStyle(card, 'transition-duration', duration);
+			this.renderer.setStyle(card, 'transform', cardTransform);
+			if (this.isResetting) {
+				this.renderer.setStyle(card, 'opacity', 1);
+			}
+
+			setTimeout(() => {
+				if (aboveThreshold) {
+					const newActiveCards = activeCards.slice(1);
+					const newQueuedCards = queuedCards.slice(1);
+
+					if (newQueuedCards.length > 1) {
+						newActiveCards.push(newQueuedCards[0]);
 					}
 
-					const cardTransform = `${withoutTranslate} translate(${translateX}, 0px)`;
+					this.zone.run(() => {
+						this.cardQueueS.next(newQueuedCards);
+						this.activeCardsS.next(newActiveCards);
+					});
+				}
 
-					this.renderer.setStyle(card, 'transition-duration', duration);
-					this.renderer.setStyle(card, 'transform', cardTransform);
+				this.applyPanEndCompleted(card);
+			}, parseInt(duration, 10) + FeedListComponent.swipedNewDelayMs);
+		});
+	}
 
-					setTimeout(() => {
-						if (aboveThreshold) {
-							const newActiveCards = activeCards.slice(1);
-							const newQueuedCards = queuedCards.slice(1);
+	private applyPanEndCompleted(card: HTMLElement) {
+		requestAnimationFrame(() => {
+			this.hasSwiped = false;
+			this.isResetting = false;
 
-							if (newQueuedCards.length > 1) {
-								newActiveCards.push(newQueuedCards[0]);
-							}
-
-							this.zone.run(() => {
-								this.cardQueueS.next(newQueuedCards);
-								this.activeCardsS.next(newActiveCards);
-							});
-						}
-
-						requestAnimationFrame(() => {
-							this.hasSwiped = false;
-							this.isResetting = false;
-
-							this.renderer.setStyle(
-								card,
-								'transform',
-								this.getCardTransformExcludingTranslation(card, true)
-							);
-							this.renderer.setStyle(card, 'opacity', 1);
-							this.renderer.removeStyle(card, 'transition-duration');
-						});
-					}, parseInt(duration, 10) + FeedListComponent.swipedNewDelayMs);
-				});
-			});
+			this.renderer.setStyle(
+				card,
+				'transform',
+				this.getCardTransformExcludingTranslation(card, true)
+			);
+			this.renderer.removeStyle(card, 'transition-duration');
+		});
 	}
 
 	private onVisibilityChange() {

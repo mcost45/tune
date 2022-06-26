@@ -6,3 +6,15 @@
 	overflow: hidden;
 	height: 100%;
 }
+
+.requires-interaction {
+	pointer-events: none;
+	display: flex;
+	position: absolute;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	background: vars.$feed-interaction-overlay-colour;
+	opacity: vars.$feed-interaction-overlay-opacity;
+}

@@ -1,2 +1,4 @@
-<span>{{ 'FOOTER_CONTENT.START' | translate }}</span> |
-<a [href]="repoLink" target="#">{{ 'FOOTER_CONTENT.END' | translate }}</a>
+{{ 'FOOTER.CREATED_BY' | translate }}&nbsp;
+<a [href]="repoLink" [title]="'ALT_TEXT.VIEW_REPO' | translate" target="#">{{
+	'FOOTER.ME' | translate
+}}</a>
