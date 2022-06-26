@@ -60,7 +60,7 @@ export class UserService {
 				const images = (user as SpotifyApi.CurrentUsersProfileResponse).images;
 				const len = images?.length;
 				if (len) {
-					return images[0].url;
+					return images?.[0].url;
 				}
 				return null;
 			})

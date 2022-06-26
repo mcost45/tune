@@ -27,7 +27,8 @@
 	},
 	"ALT_TEXT": {
 		"ARTIST_IMAGE": "Artist Image",
-		"VIEW_REPO": "View the public code repository"
+		"VIEW_REPO": "View the public code repository",
+		"SPOTIFY_LOGO": "Spotify Logo"
 	},
 	"CATEGORIES": {
 		"HOT": "Popular 🔥",

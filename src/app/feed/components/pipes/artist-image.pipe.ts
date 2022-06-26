@@ -9,6 +9,6 @@ export class ArtistImagePipe implements PipeTransform {
 			return;
 		}
 
-		return artist.images[0]?.url;
+		return artist.images?.[0]?.url;
 	}
 }

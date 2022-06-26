@@ -270,7 +270,7 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 					this.hapticService.onSelectionEnd();
 
-					const track = activeCards[0].track;
+					const track = activeCards?.[0].track;
 					if (track) {
 						if (wasLike) {
 							this.onLikeTrack(track);
@@ -320,7 +320,7 @@ export class FeedListComponent implements OnInit, OnDestroy {
 					const newQueuedCards = queuedCards.slice(1);
 
 					if (newQueuedCards.length > 1) {
-						newActiveCards.push(newQueuedCards[0]);
+						newActiveCards.push(newQueuedCards?.[0]);
 					}
 
 					this.zone.run(() => {

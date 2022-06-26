@@ -10,6 +10,14 @@
 </ion-card>
 
 <ng-template #hasRecommendation let-track="track" let-artist="artist" let-features="features">
+	<img
+		[src]="'/assets/spotify-logo.png'"
+		[alt]="'ALT_TEXT.SPOTIFY_LOGO' | translate"
+		class="spotify-logo-image"
+		fetchpriority="low"
+		draggable="false"
+	/>
+
 	<div class="track-image" [ngStyle]="track | trackImage | backgroundUrlCss">
 		<div
 			class="overlay-colour-fade"
@@ -41,7 +49,14 @@
 					fetchpriority="low"
 					draggable="false"
 				/>
-				<h2>{{ track.artists | artistNames | commaJoin }}</h2>
+				<h2>
+					{{ track.artists | artistNames | commaJoin }}
+					<span *ngIf="track | trackLink as link"
+						>&nbsp;<a [href]="link" target="#"
+							><mat-icon>open_in_new</mat-icon></a
+						></span
+					>
+				</h2>
 			</ion-card-subtitle>
 			<ion-card-title class="title hyphenate">
 				<h3>

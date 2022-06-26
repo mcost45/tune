@@ -172,7 +172,7 @@ export class FeedService implements OnDestroy {
 			const trackId = track.id;
 			if (track.preview_url && !historyTrackIds.includes(trackId)) {
 				outTracks.push(trackId);
-				outArtists.push(track.artists[0].id);
+				outArtists.push(track.artists?.[0].id);
 			}
 		}
 

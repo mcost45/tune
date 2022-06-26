@@ -11,6 +11,7 @@ import { DanceabilityCategoryPipe } from './pipes/danceability-category.pipe';
 import { EnergyCategoryPipe } from './pipes/energy-category.pipe';
 import { LoudnessCategoryPipe } from './pipes/loudness-category.pipe';
 import { AcousticnessCategoryPipe } from './pipes/acousticness-category.pipe';
+import { TrackLinkPipe } from './pipes/track-link.pipe';
 
 @NgModule({
 	imports: [SharedModule],
@@ -25,7 +26,8 @@ import { AcousticnessCategoryPipe } from './pipes/acousticness-category.pipe';
 		DanceabilityCategoryPipe,
 		EnergyCategoryPipe,
 		LoudnessCategoryPipe,
-		AcousticnessCategoryPipe
+		AcousticnessCategoryPipe,
+		TrackLinkPipe
 	],
 	exports: [FeedListComponent]
 })

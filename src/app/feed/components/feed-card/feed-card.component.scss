@@ -27,6 +27,14 @@
 	box-shadow: vars.$feed-card-box-shadow;
 }
 
+.spotify-logo-image {
+	z-index: 1;
+	position: absolute;
+	left: vars.$feed-card-spotify-logo-padding;
+	top: vars.$feed-card-spotify-logo-padding;
+	width: vars.$feed-card-spotify-logo-width;
+}
+
 .track-image {
 	position: absolute;
 	width: 100%;
@@ -81,6 +89,14 @@
 		gap: vars.$feed-card-subtitle-gap;
 		color: vars.$feed-card-text-colour;
 
+		a {
+			pointer-events: auto;
+
+			.mat-icon {
+				font-size: inherit;
+			}
+		}
+
 		.artist-image {
 			will-change: transform;
 			aspect-ratio: 1;
@@ -99,6 +115,7 @@
 	}
 
 	.categories {
+		position: relative;
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
