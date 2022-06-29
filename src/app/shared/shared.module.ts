@@ -13,12 +13,12 @@ import { ProfileMenuComponent } from './components/profile-menu/profile-menu.com
 import { CommaJoinPipe } from './pipes/comma-join.pipe';
 import { BackgroundUrlCssPipe } from './pipes/background-url-css.pipe';
 import { SanitizeResourceUrlPipe } from './pipes/sanitize-resource-url.pipe';
-import { ImageColourElementPipe } from './pipes/image-colour-element.pipe';
 import { ImageColourUrlPipe } from './pipes/image-colour-url.pipe';
 import { BackgroundCssPipe } from './pipes/background-css.pipe';
 import { BackgroundFadeCssPipe } from './pipes/background-fade-css.pipe';
 import { TruncateStringPipe } from './pipes/truncate-string.pipe';
 import { FooterComponent } from './components/footer/footer.component';
+import { ReverseListPipe } from './pipes/reverse-list.pipe';
 
 @NgModule({
 	imports: [
@@ -46,8 +46,8 @@ import { FooterComponent } from './components/footer/footer.component';
 		BackgroundFadeCssPipe,
 		SanitizeResourceUrlPipe,
 		ImageColourUrlPipe,
-		ImageColourElementPipe,
-		TruncateStringPipe
+		TruncateStringPipe,
+		ReverseListPipe
 	],
 	declarations: [
 		HeaderComponent,
@@ -61,8 +61,8 @@ import { FooterComponent } from './components/footer/footer.component';
 		BackgroundFadeCssPipe,
 		SanitizeResourceUrlPipe,
 		ImageColourUrlPipe,
-		ImageColourElementPipe,
-		TruncateStringPipe
+		TruncateStringPipe,
+		ReverseListPipe
 	]
 })
 export class SharedModule {}

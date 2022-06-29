@@ -33,7 +33,7 @@
 							"src/manifest.webmanifest"
 						],
 						"styles": ["src/theme/ion-variables.scss", "src/global.scss"],
-						"scripts": [],
+						"scripts": ["src/assets/scripts/unmute.min.js"],
 						"aot": false,
 						"vendorChunk": true,
 						"extractLicenses": false,
@@ -42,7 +42,8 @@
 						"optimization": false,
 						"namedChunks": true,
 						"serviceWorker": true,
-						"ngswConfigPath": "ngsw-config.json"
+						"ngswConfigPath": "ngsw-config.json",
+						"webWorkerTsConfig": "tsconfig.worker.json"
 					},
 					"configurations": {
 						"production": {
@@ -114,7 +115,8 @@
 								"output": "/assets"
 							},
 							"src/manifest.webmanifest"
-						]
+						],
+						"webWorkerTsConfig": "tsconfig.worker.json"
 					},
 					"configurations": {
 						"ci": {

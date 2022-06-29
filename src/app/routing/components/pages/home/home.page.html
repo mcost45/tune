@@ -3,7 +3,9 @@
 </ion-header>
 <ion-content>
 	<div class="inner-page">
-		<video src="/assets/preview.mp4" autoplay muted loop playsinline controls></video>
+		<video autoplay loop muted playsinline>
+			<source src="/assets/preview.mp4" type="video/mp4" />
+		</video>
 		<ion-button size="large" shape="round" fill="outline" color="dark" (click)="onOpenFeed()">
 			{{ 'ACTIONS.OPEN_FEED' | translate }}
 		</ion-button>

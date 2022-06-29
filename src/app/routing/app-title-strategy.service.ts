@@ -3,8 +3,12 @@ import { RouterStateSnapshot, TitleStrategy } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
 
-@Injectable()
-export class AppTitleStrategy extends TitleStrategy {
+@Injectable({
+	providedIn: 'root'
+})
+export class AppTitleStrategyService extends TitleStrategy {
+	private readonly separator = ' - ';
+
 	constructor(
 		private readonly title: Title,
 		private readonly translateService: TranslateService
@@ -14,18 +18,29 @@ export class AppTitleStrategy extends TitleStrategy {
 
 	override updateTitle(routerState: RouterStateSnapshot) {
 		const prefix = this.translateService.instant('APP.TITLE');
-		const separator = ' - ';
 		let suffix = '';
 
 		const builtTitle = this.buildTitle(routerState);
 		if (builtTitle) {
-			suffix = `${separator}${this.titleCase(this.translateService.instant(builtTitle))}`;
+			suffix = `${this.separator}${this.ensureTitleCase(
+				this.translateService.instant(builtTitle)
+			)}`;
 		}
 
 		this.title.setTitle(`${prefix}${suffix}`);
 	}
 
-	private titleCase(value: string, locale = navigator.language): string {
+	modifySubTitle(key: string, translate = true, ensureTitleCase = true): void {
+		const rootTitle = this.translateService.instant('APP.TITLE');
+		const useValue = translate ? this.translateService.instant(key) : key;
+		const subTitle = `${this.separator}${
+			ensureTitleCase ? this.ensureTitleCase(useValue) : useValue
+		}`;
+
+		this.title.setTitle(`${rootTitle}${subTitle}`);
+	}
+
+	private ensureTitleCase(value: string, locale = navigator.language): string {
 		return value
 			.toLowerCase()
 			.split(' ')

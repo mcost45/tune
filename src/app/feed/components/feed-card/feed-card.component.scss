@@ -2,16 +2,23 @@
 @use '../../../../vars' as vars;
 
 :host {
-	will-change: transform, opacity;
+	will-change: transform;
 	position: absolute;
-	height: min(#{vars.$feed-card-height}, 100%);
-	width: min(#{vars.$feed-card-width}, 100%);
 	contain: layout;
+	max-height: 100%;
+	max-width: 100%;
+	height: vars.$feed-card-fill-factor;
+	aspect-ratio: vars.$feed-card-aspect-ratio;
 	padding: vars.$feed-card-padding;
-	transition-property: transform, opacity;
+	transition-property: transform;
 	transition-timing-function: ease-in;
 	pointer-events: auto;
 	transform: perspective(none) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+
+	@media only screen and (max-height: vars.$feed-card-fill-height-breakpoint) {
+		height: 100%;
+		width: 100%;
+	}
 }
 
 .card-wrapper {
@@ -30,9 +37,10 @@
 .spotify-logo-image {
 	z-index: 1;
 	position: absolute;
+	top: 0;
 	left: vars.$feed-card-spotify-logo-padding;
-	top: vars.$feed-card-spotify-logo-padding;
 	width: vars.$feed-card-spotify-logo-width;
+	opacity: vars.$feed-card-spotify-logo-opacity;
 }
 
 .track-image {
@@ -62,6 +70,7 @@
 }
 
 .content-wrapper {
+	position: relative;
 	contain: content;
 	display: block;
 	width: 100%;
@@ -84,15 +93,17 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		padding: vars.$feed-card-subtitle-y-padding 0;
 		font-size: 1.3em;
+		padding: vars.$feed-card-subtitle-y-padding 0;
 		gap: vars.$feed-card-subtitle-gap;
 		color: vars.$feed-card-text-colour;
 
 		a {
 			pointer-events: auto;
+			border-bottom: 1px solid;
 
 			.mat-icon {
+				display: inline;
 				font-size: inherit;
 			}
 		}
@@ -102,6 +113,7 @@
 			aspect-ratio: 1;
 			border-radius: 50%;
 			object-fit: cover;
+			object-position: center;
 			width: vars.$feed-card-artist-image-size;
 			background: vars.$placeholder-colour;
 
@@ -132,7 +144,11 @@
 	}
 
 	ion-progress-bar {
+		position: relative;
 		height: vars.$feed-card-progress-height;
+		border-radius: 0 0 vars.$border-radius vars.$border-radius; // iOS fix
+		width: 100%;
+		overflow: hidden;
 
 		&::part(progress) {
 			will-change: transform;

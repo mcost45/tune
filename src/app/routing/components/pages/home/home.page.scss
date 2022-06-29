@@ -3,4 +3,5 @@
 video {
 	width: vars.$landing-video-width;
 	border-radius: vars.$border-radius;
+	overflow: hidden;
 }

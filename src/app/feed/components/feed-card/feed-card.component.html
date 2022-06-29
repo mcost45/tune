@@ -10,14 +10,6 @@
 </ion-card>
 
 <ng-template #hasRecommendation let-track="track" let-artist="artist" let-features="features">
-	<img
-		[src]="'/assets/spotify-logo.png'"
-		[alt]="'ALT_TEXT.SPOTIFY_LOGO' | translate"
-		class="spotify-logo-image"
-		fetchpriority="low"
-		draggable="false"
-	/>
-
 	<div class="track-image" [ngStyle]="track | trackImage | backgroundUrlCss">
 		<div
 			class="overlay-colour-fade"
@@ -35,11 +27,18 @@
 	<div [ngClass]="{ 'is-first': isFirst }" class="content-wrapper">
 		<ng-container *ngTemplateOutlet="header"></ng-container>
 		<ng-container *ngTemplateOutlet="categorisation"></ng-container>
-		<ion-progress-bar [value]="playProgress$ | async"></ion-progress-bar>
+		<ion-progress-bar [value]="(isFirst && (audioProgress$ | async)) || 0"></ion-progress-bar>
 	</div>
 
 	<ng-template #header>
 		<ion-card-header>
+			<img
+				[src]="'/assets/spotify-logo.png'"
+				[alt]="'ALT_TEXT.SPOTIFY_LOGO' | translate"
+				class="spotify-logo-image"
+				fetchpriority="low"
+				draggable="false"
+			/>
 			<ion-card-subtitle class="subtitle hyphenate">
 				<img
 					[src]="artist | artistImage"
@@ -52,7 +51,7 @@
 				<h2>
 					{{ track.artists | artistNames | commaJoin }}
 					<span *ngIf="track | trackLink as link"
-						>&nbsp;<a [href]="link" target="#"
+						>&nbsp;<a [href]="link" target="#" draggable="false"
 							><mat-icon>open_in_new</mat-icon></a
 						></span
 					>
@@ -61,7 +60,7 @@
 			<ion-card-title class="title hyphenate">
 				<h3>
 					{{ track.name | truncateString: maxTitleCharLen }}
-					<span *ngIf="track.explicit">&nbsp;<mat-icon>explicit</mat-icon></span>
+					<span *ngIf="track.explicit"><mat-icon>explicit</mat-icon></span>
 				</h3>
 			</ion-card-title>
 		</ion-card-header>

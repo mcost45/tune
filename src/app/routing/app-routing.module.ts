@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes, TitleStrategy } from '@angular/router';
 import { LoggedInActivateGuard } from './guards/logged-in-activate.guard';
-import { AppTitleStrategy } from './app-title-strategy';
+import { AppTitleStrategyService } from './app-title-strategy.service';
 
 const routes: Routes = [
 	{
@@ -58,7 +58,7 @@ const routes: Routes = [
 	providers: [
 		{
 			provide: TitleStrategy,
-			useClass: AppTitleStrategy
+			useClass: AppTitleStrategyService
 		}
 	]
 })

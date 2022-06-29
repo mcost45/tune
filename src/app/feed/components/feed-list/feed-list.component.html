@@ -1,10 +1,19 @@
 <app-feed-card
-	*ngFor="let recommendation of activeCards$ | async; let i = index; trackBy: trackById"
+	*ngFor="
+		let recommendation of activeCards$ | async | reverseList;
+		let i = index;
+		let len = count;
+		trackBy: trackById
+	"
 	class="no-select"
-	[index]="i"
 	[recommendation]="recommendation"
 	[transitionDurationMs]="transitionDurationMs"
-	[ngStyle]="i | cardOffset"
+	[audioProgress$]="audioService.progress$"
+	[isFirst]="i === len - 1"
+	[isSecond]="i === len - 2"
+	[maxTitleCharLen]="maxTitleCharLen"
+	[overlayFadeStrengthPercentage]="overlayFadeStrengthPercentage"
+	[ngStyle]="len - i - 1 | cardOffset"
 ></app-feed-card>
 
 <div *ngIf="(hasInteracted$ | async) === false" class="requires-interaction title">
