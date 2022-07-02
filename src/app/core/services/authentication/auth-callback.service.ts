@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AuthCallbackProps } from '../../../domain/authentication/auth-callback-props';
+import { AuthCallbackProps } from '../../domain/authentication/auth-callback-props';
 import { LogService } from '../../../shared/services/utility/log.service';
 import { ConfigService } from '../../../shared/services/utility/config.service';
 import { LoginService } from '../login.service';

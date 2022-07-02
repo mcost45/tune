@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
-import { AuthStorageProps } from '../../../domain/authentication/auth-storage-props';
+import { AuthStorageProps } from '../../domain/authentication/auth-storage-props';
 import { LogService } from '../../../shared/services/utility/log.service';
 import { LogLevel } from '../../../shared/domain/utility/log-level';
-import { TokenSetProps } from '../../../domain/authentication/token-set-props';
-import { TokenSetKeys } from '../../../domain/authentication/token-set-keys';
+import { TokenSetProps } from '../../domain/authentication/token-set-props';
+import { TokenSetKeys } from '../../domain/authentication/token-set-keys';
 import { waitParallel } from '../../../utility/wait-parallel';
 
 @Injectable({

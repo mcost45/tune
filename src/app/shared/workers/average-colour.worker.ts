@@ -3,15 +3,11 @@
 import { FastAverageColor, FastAverageColorOptions } from 'fast-average-color';
 import { AverageColourWorkerMessage } from '../domain/average-colour-worker-message';
 import { AverageColourWorkerAction } from '../domain/average-colour-worker-action';
-import { bitmapToArray, Context } from '../../utility/bitmap-to-array';
+import { bitmapToArray } from '../../utility/bitmap-to-array';
 import { urlToBitmap } from '../../utility/url-to-bitmap';
 import { rgbToHex } from '../../utility/rgb-to-hex';
 
 const fac = new FastAverageColor();
-const options: FastAverageColorOptions = {
-	mode: 'speed',
-	algorithm: 'simple'
-};
 const colourIfFailedHex = '#1c1c1d';
 const colourMsgIfFailed = (url: string): AverageColourWorkerMessage<[string, string]> => [
 	AverageColourWorkerAction.colour,
@@ -33,31 +29,38 @@ try {
 
 addEventListener('message', (event) => onMessage(event.data));
 
-const onMessage = (msg: AverageColourWorkerMessage<[string?, string?]>) => {
-	const [action, url] = msg;
+const onMessage = (
+	msg: AverageColourWorkerMessage<[string?, (string | FastAverageColorOptions)?]>
+) => {
+	const [action, url, options] = msg;
 
 	switch (action) {
 		case AverageColourWorkerAction.colour:
-			return onUrlReceived(url);
+			return onUrlReceived(url, options as FastAverageColorOptions);
+
+		case AverageColourWorkerAction.checkSupported:
+			return onCheckSupportedReceieved();
 
 		case AverageColourWorkerAction.destroy:
 			return onDestroyReceived();
 	}
 };
 
-const onUrlReceived = (url?: string) => {
+const onUrlReceived = (url?: string, options?: FastAverageColorOptions) => {
 	if (!url) {
 		return;
 	}
 
-	if (!context) {
-		return postMessage(colourMsgIfFailed(url));
-	}
-
 	try {
 		urlToBitmap(url).then((bitmap) => {
-			// Note: Necessary for weird TS error on context types.
-			const array = bitmapToArray(context as unknown as Context, bitmap);
+			if (!context) {
+				return postMessage(colourMsgIfFailed(url));
+			}
+
+			// Weird type issue here.
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
+			const array = bitmapToArray(context, bitmap);
 			if (!array) {
 				return postMessage(colourMsgIfFailed(url));
 			}
@@ -75,6 +78,16 @@ const onUrlReceived = (url?: string) => {
 	} catch (e) {
 		return postMessage(colourMsgIfFailed(url));
 	}
+};
+
+const onCheckSupportedReceieved = () => {
+	const offscreenCanvasIsSupported = !!canvas && !!context;
+	const msg: AverageColourWorkerMessage<boolean[]> = [
+		AverageColourWorkerAction.checkedSupported,
+		offscreenCanvasIsSupported
+	];
+
+	postMessage(msg);
 };
 
 const onDestroyReceived = () => {

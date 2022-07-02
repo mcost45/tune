@@ -20,7 +20,7 @@ export class FeedService implements OnDestroy {
 
 	private readonly initiatedS = new BehaviorSubject(false);
 	private readonly recommendedS = new ReplaySubject<RecommendedCard[]>();
-	private readonly destroyedS = new ReplaySubject(1);
+	private readonly destroyedS = new ReplaySubject<boolean>(1);
 
 	private readonly likeBatch: string[] = [];
 	private likeBatchTimer?: ReturnType<typeof setTimeout>;

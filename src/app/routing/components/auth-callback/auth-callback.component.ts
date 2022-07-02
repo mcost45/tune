@@ -14,7 +14,7 @@ import { ConfigService } from '../../../shared/services/utility/config.service';
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AuthCallbackComponent implements OnDestroy {
-	private readonly destroyedS = new ReplaySubject(1);
+	private readonly destroyedS = new ReplaySubject<boolean>(1);
 
 	constructor(
 		private readonly logger: LogService,

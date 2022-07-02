@@ -17,6 +17,9 @@
 
 	@media only screen and (max-height: vars.$feed-card-fill-height-breakpoint) {
 		height: 100%;
+	}
+
+	@media only screen and (max-width: vars.$feed-card-fill-width-breakpoint) {
 		width: 100%;
 	}
 }

@@ -22,7 +22,8 @@ $feed-interaction-overlay-opacity: 0.95;
 
 $feed-card-padding: 20px;
 $feed-card-fill-factor: 80%;
-$feed-card-fill-height-breakpoint: 700px;
+$feed-card-fill-height-breakpoint: 900px;
+$feed-card-fill-width-breakpoint: 400px;
 $feed-card-aspect-ratio: math.div(1, $golden-ratio);
 $feed-card-subtitle-gap: 8px;
 $feed-card-title-y-padding: 8%;

@@ -33,6 +33,8 @@ import 'hammerjs';
 import { ConfigService } from '../../../shared/services/utility/config.service';
 import { AudioService } from '../../services/audio.service';
 import { AppTitleStrategyService } from '../../../routing/app-title-strategy.service';
+import { waitFrame } from '../../../utility/wait-frame';
+import { waitTime } from '../../../utility/wait-time';
 
 @Component({
 	selector: 'app-feed-list',
@@ -65,7 +67,7 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 	private readonly activeCardsS = new BehaviorSubject<RecommendedCard[]>([]);
 	private readonly cardQueueS = new BehaviorSubject<RecommendedCard[]>([]);
-	private readonly destroyedS = new ReplaySubject(1);
+	private readonly destroyedS = new ReplaySubject<boolean>(1);
 
 	private readonly onHoverBound = this.onHover.bind(this);
 	private readonly onVisibilityChangeBound = this.onVisibilityChange.bind(this);
@@ -202,25 +204,25 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		this.applyHover(card, horizontal, vertical, clientWidth);
 	}
 
-	private applyHover(
+	private async applyHover(
 		card: HTMLElement,
 		horizontal: number,
 		vertical: number,
 		clientWidth: number
 	) {
-		requestAnimationFrame(() => {
-			const threshold = 8;
-			const rotateX = threshold / 2 - horizontal * threshold;
-			const rotateY = vertical * threshold - threshold / 2;
-			const cardTransform = `perspective(${clientWidth}px) rotateX(${rotateY}deg) rotateY(${rotateX}deg) rotateZ(0deg)`;
+		await waitFrame();
 
-			this.renderer.setStyle(card, 'transform', cardTransform);
-			this.renderer.setStyle(
-				card,
-				'transition-duration',
-				FeedListComponent.hoverTransitionDurationMs
-			);
-		});
+		const threshold = 8;
+		const rotateX = threshold / 2 - horizontal * threshold;
+		const rotateY = vertical * threshold - threshold / 2;
+		const cardTransform = `perspective(${clientWidth}px) rotateX(${rotateY}deg) rotateY(${rotateX}deg) rotateZ(0deg)`;
+
+		this.renderer.setStyle(card, 'transform', cardTransform);
+		this.renderer.setStyle(
+			card,
+			'transition-duration',
+			FeedListComponent.hoverTransitionDurationMs
+		);
 	}
 
 	private onPanStart(event: HammerInput) {
@@ -235,10 +237,10 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		this.applyPanStart(card);
 	}
 
-	private applyPanStart(card: HTMLElement) {
-		requestAnimationFrame(() => {
-			this.renderer.removeStyle(card, 'transition-duration');
-		});
+	private async applyPanStart(card: HTMLElement) {
+		await waitFrame();
+
+		this.renderer.removeStyle(card, 'transition-duration');
 	}
 
 	private onPan(event: HammerInput) {
@@ -250,14 +252,14 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		this.applyPan(card, event);
 	}
 
-	private applyPan(card: HTMLElement, event: HammerInput) {
-		requestAnimationFrame(() => {
-			const { deltaX, deltaY } = event;
-			const withoutTranslate = this.getCardTransformExcludingTranslation(card);
-			const cardTransform = `${withoutTranslate} translate(${deltaX}px, ${deltaY}px)`;
+	private async applyPan(card: HTMLElement, event: HammerInput) {
+		await waitFrame();
 
-			this.renderer.setStyle(card, 'transform', cardTransform);
-		});
+		const { deltaX, deltaY } = event;
+		const withoutTranslate = this.getCardTransformExcludingTranslation(card);
+		const cardTransform = `${withoutTranslate} translate(${deltaX}px, ${deltaY}px)`;
+
+		this.renderer.setStyle(card, 'transform', cardTransform);
 	}
 
 	private onPanEnd(event: HammerInput) {
@@ -291,85 +293,83 @@ export class FeedListComponent implements OnInit, OnDestroy {
 			});
 	}
 
-	private applyPanEndInitial(
+	private async applyPanEndInitial(
 		card: HTMLElement,
 		aboveThreshold: boolean,
 		wasLike: boolean,
 		activeCards: RecommendedCard[],
 		queuedCards: RecommendedCard[]
 	) {
-		requestAnimationFrame(() => {
-			const maxActiveLen = FeedListComponent.maxActiveLen;
-			const duration = FeedListComponent.moveTransitionDurationMs;
-			const withoutTranslate = this.getCardTransformExcludingTranslation(card, true);
+		await waitFrame();
 
-			let translateX: string;
-			if (aboveThreshold) {
-				translateX = wasLike ? '320%' : '-320%';
-				this.isResetting = false;
-			} else {
-				translateX = '0px';
-				this.isResetting = true;
+		const maxActiveLen = FeedListComponent.maxActiveLen;
+		const duration = FeedListComponent.moveTransitionDurationMs;
+		const withoutTranslate = this.getCardTransformExcludingTranslation(card, true);
+
+		let translateX: string;
+		if (aboveThreshold) {
+			translateX = wasLike ? '320%' : '-320%';
+			this.isResetting = false;
+		} else {
+			translateX = '0px';
+			this.isResetting = true;
+		}
+
+		const cardTransform = `${withoutTranslate} translate(${translateX}, 0px)`;
+
+		this.isDragging = false;
+
+		this.renderer.setStyle(card, 'transition-duration', duration);
+		this.renderer.setStyle(card, 'transform', cardTransform);
+
+		await waitTime(parseInt(duration, 10) + FeedListComponent.swipedNewDelayMs);
+
+		if (aboveThreshold) {
+			const newActiveCards = activeCards.slice(1);
+			const newQueuedCards = queuedCards.slice(1);
+			const newActiveCardsLen = newActiveCards.length;
+			const newQueuedCardsLen = newQueuedCards.length;
+
+			if (newQueuedCardsLen > 0) {
+				const pushAmount = maxActiveLen - newActiveCardsLen;
+				const pushActiveCards = newQueuedCards?.slice(0, pushAmount);
+
+				if (pushActiveCards) {
+					newActiveCards.push(...pushActiveCards);
+				}
 			}
 
-			const cardTransform = `${withoutTranslate} translate(${translateX}, 0px)`;
+			const newTrack = newActiveCards[0]?.track;
 
-			this.isDragging = false;
+			this.onNewAudio(newTrack);
+			this.cardQueueS.next(newQueuedCards);
 
-			this.renderer.setStyle(card, 'transition-duration', duration);
-			this.renderer.setStyle(card, 'transform', cardTransform);
+			this.zone.run(() => {
+				this.activeCardsS.next(newActiveCards);
+			});
+		}
 
-			setTimeout(() => {
-				if (aboveThreshold) {
-					const newActiveCards = activeCards.slice(1);
-					const newQueuedCards = queuedCards.slice(1);
-					const newActiveCardsLen = newActiveCards.length;
-					const newQueuedCardsLen = newQueuedCards.length;
-
-					if (newQueuedCardsLen > 0) {
-						const pushAmount = maxActiveLen - newActiveCardsLen;
-						const pushActiveCards = newQueuedCards?.slice(0, pushAmount);
-
-						if (pushActiveCards) {
-							newActiveCards.push(...pushActiveCards);
-						}
-					}
-
-					const newTrack = newActiveCards[0]?.track;
-
-					this.onNewAudio(newTrack);
-					this.cardQueueS.next(newQueuedCards);
-
-					this.zone.run(() => {
-						this.activeCardsS.next(newActiveCards);
-					});
-				}
-
-				this.applyPanEndCompleted(card);
-			}, parseInt(duration, 10) + FeedListComponent.swipedNewDelayMs);
-		});
+		this.applyPanEndCompleted(card);
 	}
 
-	private applyPanEndCompleted(card: HTMLElement) {
-		requestAnimationFrame(() => {
-			this.hasSwiped = false;
-			this.isResetting = false;
+	private async applyPanEndCompleted(card: HTMLElement) {
+		await waitFrame();
 
-			this.renderer.setStyle(
-				card,
-				'transform',
-				this.getCardTransformExcludingTranslation(card, true)
-			);
-			this.renderer.removeStyle(card, 'transition-duration');
-		});
+		this.hasSwiped = false;
+		this.isResetting = false;
+
+		this.renderer.setStyle(
+			card,
+			'transform',
+			this.getCardTransformExcludingTranslation(card, true)
+		);
+		this.renderer.removeStyle(card, 'transition-duration');
 	}
 
 	private onNewAudio(track?: SpotifyApi.TrackObjectFull) {
 		if (track) {
-			this.audioService.setSource(track.preview_url).then(() => {
-				this.audioService.play();
-				this.appTitleStrategyService.modifySubTitle(`${track.name}`, false, false);
-			});
+			this.audioService.setSource(track.preview_url);
+			this.appTitleStrategyService.modifySubTitle(`${track.name}`, false, false);
 		}
 	}
 

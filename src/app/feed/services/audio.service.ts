@@ -15,6 +15,7 @@ import {
 	takeUntil
 } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { fromFetch } from 'rxjs/fetch';
 import { ConfigService } from '../../shared/services/utility/config.service';
 import { LogLevel } from '../../shared/domain/utility/log-level';
 import { InteractedService } from '../../shared/services/interacted.service';
@@ -34,7 +35,8 @@ export class AudioService implements OnDestroy {
 
 	private readonly playingS = new BehaviorSubject(false);
 	private readonly progressS = new BehaviorSubject(0);
-	private readonly destroyedS = new ReplaySubject(1);
+	private readonly destroyedS = new ReplaySubject<boolean>(1);
+	private readonly sourceUrlS = new ReplaySubject<string>();
 
 	private readonly audioProgress$ = this.progressS.pipe(runInZone(this.zone));
 
@@ -89,36 +91,10 @@ export class AudioService implements OnDestroy {
 		}
 	}
 
-	async setSource(url: string): Promise<void> {
-		this.progressS.next(0);
+	setSource(url: string) {
 		this.stop();
-
-		const response = await fetch(url);
-		const dataBuffer = await response.arrayBuffer();
-		this.buffer = await this.context?.decodeAudioData(dataBuffer);
-
-		this.updateSource();
-	}
-
-	private updateSource() {
-		const { context, buffer, gainNode } = this;
-		const config = this.configService.config.playback;
-
-		if (context && buffer && gainNode) {
-			const newSource = (this.source = context.createBufferSource());
-			newSource.loop = config.loop;
-			newSource.buffer = buffer;
-			newSource.connect(gainNode);
-			this.duration = buffer.duration;
-		}
-	}
-
-	private onPlayed() {
-		this.playingS.next(true);
-	}
-
-	private onStopped() {
-		this.playingS.next(false);
+		this.progressS.next(0);
+		this.sourceUrlS.next(url);
 	}
 
 	private createObservables() {
@@ -147,6 +123,39 @@ export class AudioService implements OnDestroy {
 				takeUntil(this.destroyedS)
 			)
 			.subscribe((progress) => this.progressS.next(progress));
+
+		this.sourceUrlS
+			.pipe(
+				switchMap((url) => fromFetch(url)),
+				takeUntil(this.destroyedS)
+			)
+			.subscribe(async (response) => {
+				const dataBuffer = await response.arrayBuffer();
+				this.buffer = await this.context?.decodeAudioData(dataBuffer);
+				this.updateSource();
+				this.play();
+			});
+	}
+
+	private updateSource() {
+		const { context, buffer, gainNode } = this;
+		const config = this.configService.config.playback;
+
+		if (context && buffer && gainNode) {
+			const newSource = (this.source = context.createBufferSource());
+			newSource.loop = config.loop;
+			newSource.buffer = buffer;
+			newSource.connect(gainNode);
+			this.duration = buffer.duration;
+		}
+	}
+
+	private onPlayed() {
+		this.playingS.next(true);
+	}
+
+	private onStopped() {
+		this.playingS.next(false);
 	}
 
 	private createContext() {

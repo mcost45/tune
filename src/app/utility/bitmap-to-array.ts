@@ -1,6 +1,12 @@
-export interface Context {
-	drawImage: (image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number) => void;
-	getImageData: (x: number, y: number, width: number, height: number) => ImageData;
+interface Context {
+	drawImage: (
+		bitmap: ImageBitmap,
+		left: number,
+		top: number,
+		width: number,
+		height: number
+	) => void;
+	getImageData: (left: number, top: number, width: number, height: number) => ImageData;
 }
 
 export const bitmapToArray = (

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { ConfigService } from '../../../shared/services/utility/config.service';
-import { AuthInitProps } from '../../../domain/authentication/auth-init-props';
+import { AuthInitProps } from '../../domain/authentication/auth-init-props';
 import { LogService } from '../../../shared/services/utility/log.service';
 import { LogLevel } from '../../../shared/domain/utility/log-level';
-import { AuthInitKeys } from '../../../domain/authentication/auth-init-keys';
+import { AuthInitKeys } from '../../domain/authentication/auth-init-keys';
 import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({

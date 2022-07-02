@@ -16,7 +16,7 @@ import { runInZone } from '../../utility/run-in-zone';
 export class InteractedService implements OnDestroy {
 	private static readonly waitForEvent = ['click', 'scroll', 'mousedown'];
 
-	private readonly destroyedS = new ReplaySubject(1);
+	private readonly destroyedS = new ReplaySubject<boolean>(1);
 	private readonly interactedS = new BehaviorSubject(false);
 	private readonly interacted$ = this.interactedS.asObservable();
 
