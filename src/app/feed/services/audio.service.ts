@@ -5,6 +5,7 @@ import {
 	distinctUntilChanged,
 	EMPTY,
 	filter,
+	from,
 	interval,
 	map,
 	NEVER,
@@ -89,6 +90,7 @@ export class AudioService implements OnDestroy {
 			source.stop();
 			this.onStopped();
 		}
+		this.source = undefined;
 	}
 
 	setSource(url: string) {
@@ -127,11 +129,17 @@ export class AudioService implements OnDestroy {
 		this.sourceUrlS
 			.pipe(
 				switchMap((url) => fromFetch(url)),
+				switchMap((response) => from(response.arrayBuffer())),
+				filter((dataBuffer) => !!dataBuffer && !!this.context),
+				switchMap((dataBuffer) =>
+					from((this.context as AudioContext).decodeAudioData(dataBuffer as ArrayBuffer))
+				),
+				filter((buffer) => !!buffer),
 				takeUntil(this.destroyedS)
 			)
-			.subscribe(async (response) => {
-				const dataBuffer = await response.arrayBuffer();
-				this.buffer = await this.context?.decodeAudioData(dataBuffer);
+			.subscribe((buffer) => {
+				this.buffer = buffer as AudioBuffer;
+				this.stop();
 				this.updateSource();
 				this.play();
 			});

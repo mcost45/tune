@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Location } from '@angular/common';
-import { ReplaySubject, take, takeUntil } from 'rxjs';
+import { from, ReplaySubject, switchMap, take, takeUntil } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { AuthCallbackService } from '../../../core/services/authentication/auth-callback.service';
 import { UserService } from '../../../core/services/user.service';
@@ -25,9 +25,12 @@ export class AuthCallbackComponent implements OnDestroy {
 		private readonly loginService: LoginService,
 		private readonly authCallbackService: AuthCallbackService
 	) {
-		route.params.pipe(takeUntil(this.destroyedS)).subscribe(async () => {
-			await this.initiate();
-		});
+		route.params
+			.pipe(
+				switchMap(() => from(this.initiate())),
+				takeUntil(this.destroyedS)
+			)
+			.subscribe();
 	}
 
 	ngOnDestroy() {
@@ -40,14 +43,17 @@ export class AuthCallbackComponent implements OnDestroy {
 
 		this.userService
 			.getUser$()
-			.pipe(take(1), takeUntil(this.destroyedS))
-			.subscribe(async (user) => {
-				if (user) {
-					this.allowPrevNavAfterAuth();
-				} else {
-					await this.authCallbackService.handleAuthResponse(urlParams);
-				}
-			});
+			.pipe(
+				take(1),
+				switchMap((user) => {
+					if (user) {
+						this.allowPrevNavAfterAuth();
+					}
+					return from(this.authCallbackService.handleAuthResponse(urlParams));
+				}),
+				takeUntil(this.destroyedS)
+			)
+			.subscribe();
 	}
 
 	private allowPrevNavAfterAuth() {

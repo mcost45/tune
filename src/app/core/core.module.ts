@@ -1,5 +1,6 @@
 import { APP_INITIALIZER, NgModule, Optional, SkipSelf } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
+import { from, switchMap, tap } from 'rxjs';
 import { ConfigService } from '../shared/services/utility/config.service';
 import { LogService } from '../shared/services/utility/log.service';
 import { InteractedService } from '../shared/services/interacted.service';
@@ -17,14 +18,15 @@ const coreFactory =
 	) =>
 	() =>
 		new Promise<void>((resolve) => {
-			configService.loadConfig().subscribe(async () => {
-				logService.init();
-				await storage.create();
-				await userService.init();
-				interactedService.init();
-
-				resolve();
-			});
+			configService
+				.loadConfig()
+				.pipe(
+					tap(() => logService.init()),
+					switchMap(() => from(storage.create())),
+					switchMap(() => from(userService.init())),
+					tap(() => interactedService.init())
+				)
+				.subscribe(resolve);
 		});
 
 @NgModule({
