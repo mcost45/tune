@@ -31,9 +31,10 @@
 	height: 100%;
 	align-items: flex-end;
 	margin: 0;
-	border-radius: vars.$border-radius;
 	overflow: hidden;
 	pointer-events: none;
+	border-radius: vars.$border-radius;
+	border: vars.$glass-border;
 	box-shadow: vars.$feed-card-box-shadow;
 }
 
@@ -52,8 +53,6 @@
 	height: 100%;
 	background-position: center;
 	background-size: cover;
-	image-rendering: pixelated;
-	image-rendering: crisp-edges;
 	filter: saturate(vars.$feed-card-track-image-saturation)
 		contrast(vars.$feed-card-track-image-contrast)
 		brightness(vars.$feed-card-track-image-brightness);
@@ -118,7 +117,7 @@
 			object-fit: cover;
 			object-position: center;
 			width: vars.$feed-card-artist-image-size;
-			background: vars.$placeholder-colour;
+			border: vars.$glass-border;
 
 			&.is-first {
 				animation-name: spin;
@@ -138,8 +137,8 @@
 		padding-bottom: vars.$feed-card-category-y-padding;
 
 		.category {
-			font-size: 1.1em;
-			border: 1px currentColor solid;
+			font-size: vars.$feed-card-category-font-size;
+			border: vars.$glass-border;
 			border-radius: vars.$border-radius;
 			padding: vars.$feed-card-category-gap 1.5 * vars.$feed-card-category-gap;
 			color: vars.$feed-card-text-colour;
@@ -156,7 +155,7 @@
 		&::part(progress) {
 			will-change: transform;
 			transition-duration: vars.$feed-card-progress-transition-duration;
-			height: vars.$feed-card-progress-height + 2;
+			height: vars.$feed-card-progress-height + 1;
 		}
 	}
 }

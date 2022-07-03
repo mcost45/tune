@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { LogLevel } from '../../shared/domain/utility/log-level';
 import { LogService } from '../../shared/services/utility/log.service';
 import { ConfigService } from '../../shared/services/utility/config.service';
+import { unknownErrorToString } from '../../utility/unknown-error-to-string';
 import { AuthInitService } from './authentication/auth-init.service';
 import { AccessTokenService } from './authentication/access-token.service';
 import { SpotifyService } from './spotify.service';
@@ -51,13 +52,16 @@ export class LoginService {
 
 			throw new Error(LoginService.noUser);
 		} catch (e) {
-			return this.onFailedLogin();
+			return this.onFailedLogin(unknownErrorToString(e));
 		}
 	}
 
 	async onFailedLogin(error?: string | null): Promise<void> {
+		if (error) {
+			this.logger.log(LogLevel.error, error);
+		}
 		await this.userService.removeUser();
-		await this.redirectToFailedPage(error);
+		await this.redirectToFailedPage();
 	}
 
 	async logout(): Promise<void> {
@@ -71,10 +75,7 @@ export class LoginService {
 		await this.router.navigateByUrl(authConfig.postSuccessRoute);
 	}
 
-	private async redirectToFailedPage(error?: string | null): Promise<void> {
-		if (error) {
-			this.logger.log(LogLevel.error, error);
-		}
+	private async redirectToFailedPage(): Promise<void> {
 		const authConfig = this.configService.config.auth;
 		await this.router.navigateByUrl(authConfig.postFailedRoute);
 	}

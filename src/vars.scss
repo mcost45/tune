@@ -3,7 +3,7 @@
 $golden-ratio: 1.618;
 
 $border-radius: 24px;
-$placeholder-colour: #d3d3d3;
+$glass-border: 2px solid rgba(255, 255, 255, 0.6);
 $page-padding: 32px 16px;
 $page-gap: 42px;
 
@@ -32,11 +32,12 @@ $feed-card-category-y-padding: 7%;
 $feed-card-artist-image-size: 18%;
 $feed-card-text-colour: #ffffff;
 $feed-card-category-gap: 8px;
+$feed-card-category-font-size: 1.1em;
 $feed-card-progress-transition-duration: 1s;
 $feed-card-progress-height: 10px;
 $feed-card-track-image-saturation: 3;
 $feed-card-track-image-brightness: 0.9;
-$feed-card-track-image-contrast: 1.4;
+$feed-card-track-image-contrast: 1;
 $feed-card-track-image-blur: 2px;
 $feed-card-track-image-overlay-shadow: linear-gradient(
 	rgba(0, 0, 0, 0) 25%,

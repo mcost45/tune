@@ -3,7 +3,7 @@
 import { FastAverageColor, FastAverageColorOptions } from 'fast-average-color';
 import { AverageColourWorkerMessage } from '../domain/average-colour-worker-message';
 import { AverageColourWorkerAction } from '../domain/average-colour-worker-action';
-import { bitmapToArray } from '../../utility/bitmap-to-array';
+import { bitmapToArray } from '../../utility/bitmap-to-array-offscreen';
 import { urlToBitmap } from '../../utility/url-to-bitmap';
 import { rgbToHex } from '../../utility/rgb-to-hex';
 
@@ -57,9 +57,6 @@ const onUrlReceived = (url?: string, options?: FastAverageColorOptions) => {
 				return postMessage(colourMsgIfFailed(url));
 			}
 
-			// Weird type issue here.
-			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-			// @ts-ignore
 			const array = bitmapToArray(context, bitmap);
 			if (!array) {
 				return postMessage(colourMsgIfFailed(url));

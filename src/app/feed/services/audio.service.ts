@@ -9,6 +9,7 @@ import {
 	interval,
 	map,
 	NEVER,
+	of,
 	ReplaySubject,
 	retry,
 	switchMap,
@@ -62,7 +63,12 @@ export class AudioService implements OnDestroy {
 		this.cleanUpContext();
 	}
 
-	play() {
+	setSource(url: string) {
+		this.progressS.next(0);
+		this.sourceUrlS.next(url);
+	}
+
+	private play() {
 		const source = this.source;
 		if (source) {
 			this.interactedService.hasInteracted$
@@ -71,7 +77,7 @@ export class AudioService implements OnDestroy {
 					take(1),
 					tap(() => {
 						source.start();
-						this.onPlayed();
+						this.playingS.next(true);
 					}),
 					retry(1),
 					catchError((e) => {
@@ -84,19 +90,14 @@ export class AudioService implements OnDestroy {
 		}
 	}
 
-	stop() {
+	private stop() {
 		const source = this.source;
 		if (source) {
 			source.stop();
-			this.onStopped();
+			source.disconnect();
+			this.source = undefined;
 		}
-		this.source = undefined;
-	}
-
-	setSource(url: string) {
-		this.stop();
-		this.progressS.next(0);
-		this.sourceUrlS.next(url);
+		this.playingS.next(false);
 	}
 
 	private createObservables() {
@@ -128,26 +129,32 @@ export class AudioService implements OnDestroy {
 
 		this.sourceUrlS
 			.pipe(
+				tap(() => this.stop()),
 				switchMap((url) => fromFetch(url)),
 				switchMap((response) => from(response.arrayBuffer())),
 				filter((dataBuffer) => !!dataBuffer && !!this.context),
 				switchMap((dataBuffer) =>
 					from((this.context as AudioContext).decodeAudioData(dataBuffer as ArrayBuffer))
 				),
+				catchError((e) => {
+					this.logger.log(LogLevel.error, e);
+					return of(undefined);
+				}),
 				filter((buffer) => !!buffer),
 				takeUntil(this.destroyedS)
 			)
 			.subscribe((buffer) => {
 				this.buffer = buffer as AudioBuffer;
-				this.stop();
 				this.updateSource();
 				this.play();
 			});
 	}
 
 	private updateSource() {
-		const { context, buffer, gainNode } = this;
+		const { context, buffer, gainNode, source } = this;
 		const config = this.configService.config.playback;
+
+		this.stop();
 
 		if (context && buffer && gainNode) {
 			const newSource = (this.source = context.createBufferSource());
@@ -158,19 +165,10 @@ export class AudioService implements OnDestroy {
 		}
 	}
 
-	private onPlayed() {
-		this.playingS.next(true);
-	}
-
-	private onStopped() {
-		this.playingS.next(false);
-	}
-
 	private createContext() {
 		const config = this.configService.config.playback;
 
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
+		// @ts-expect-error Necessary for cross-browser support
 		const contextConstructor = AudioContext || webkitAudioContext;
 		const context = (this.context = new contextConstructor());
 

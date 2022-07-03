@@ -35,16 +35,18 @@ import { AudioService } from '../../services/audio.service';
 import { AppTitleStrategyService } from '../../../routing/app-title-strategy.service';
 import { waitFrame } from '../../../utility/wait-frame';
 import { waitTime } from '../../../utility/wait-time';
+import { ArtistNamesPipe } from '../pipes/artist-names.pipe';
+import { CommaJoinPipe } from '../../../shared/pipes/comma-join.pipe';
 
 @Component({
 	selector: 'app-feed-list',
 	templateUrl: './feed-list.component.html',
 	styleUrls: ['./feed-list.component.scss'],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	providers: [FeedSeedService, FeedService, AudioService]
+	providers: [FeedSeedService, FeedService, AudioService, ArtistNamesPipe, CommaJoinPipe]
 })
 export class FeedListComponent implements OnInit, OnDestroy {
-	private static readonly maxActiveLen = 5;
+	private static readonly maxActiveLen = 7;
 	private static readonly fetchBelowLen = Math.ceil(FeedListComponent.maxActiveLen * 0.75);
 	private static readonly fetchLen = Math.ceil(FeedListComponent.maxActiveLen * 2.5);
 	private static readonly minSwipeVelocity = 0.2;
@@ -87,6 +89,8 @@ export class FeedListComponent implements OnInit, OnDestroy {
 		private readonly interactedService: InteractedService,
 		readonly audioService: AudioService,
 		private readonly appTitleStrategyService: AppTitleStrategyService,
+		private readonly artistNamesPipe: ArtistNamesPipe,
+		private readonly commaJoinPipe: CommaJoinPipe,
 		private readonly zone: NgZone,
 		private readonly renderer: Renderer2,
 		private readonly self: ElementRef
@@ -368,8 +372,12 @@ export class FeedListComponent implements OnInit, OnDestroy {
 
 	private onNewAudio(track?: SpotifyApi.TrackObjectFull) {
 		if (track) {
+			const artists = this.commaJoinPipe.transform(
+				this.artistNamesPipe.transform(track.artists)
+			);
+
 			this.audioService.setSource(track.preview_url);
-			this.appTitleStrategyService.modifySubTitle(`${track.name}`, false, false);
+			this.appTitleStrategyService.modifySubTitle(`${track.name} - ${artists}`, false, false);
 		}
 	}
 

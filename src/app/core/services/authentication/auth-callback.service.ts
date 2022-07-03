@@ -4,6 +4,7 @@ import { LogService } from '../../../shared/services/utility/log.service';
 import { ConfigService } from '../../../shared/services/utility/config.service';
 import { LoginService } from '../login.service';
 import { LogLevel } from '../../../shared/domain/utility/log-level';
+import { unknownErrorToString } from '../../../utility/unknown-error-to-string';
 import { AccessTokenService } from './access-token.service';
 import { AuthStorageService } from './auth-storage.service';
 
@@ -55,7 +56,7 @@ export class AuthCallbackService {
 			});
 			storedCodeVerifier = stored.codeVerifier;
 		} catch (e) {
-			return this.loginService.onFailedLogin(error);
+			return this.loginService.onFailedLogin(unknownErrorToString(e));
 		}
 
 		await this.beginLogin(code as string, storedCodeVerifier);
@@ -93,7 +94,7 @@ export class AuthCallbackService {
 
 			await this.loginService.onCompletedLogin();
 		} catch (e) {
-			return this.loginService.onFailedLogin();
+			return this.loginService.onFailedLogin(unknownErrorToString(e));
 		}
 	}
 }
