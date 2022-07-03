@@ -2,6 +2,8 @@
 
 **An Angular Ionic PWA**
 
+https://user-images.githubusercontent.com/17732915/177037209-5edcc0e6-394c-40bd-bae0-3d0cd8444bdc.mp4
+
 ## Key Features and Components
 
 - 'Tinder-swiper' card-based music recommendation, determined by the users' favourite artists and tracks
