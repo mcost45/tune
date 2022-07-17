@@ -2,6 +2,8 @@
 
 **An Angular Ionic PWA**
 
+**NOTE: To test out this app, your Spotify email must be added to the list of authorised users beforehand. Contact me if you would like to try.**
+
 https://user-images.githubusercontent.com/17732915/177037209-5edcc0e6-394c-40bd-bae0-3d0cd8444bdc.mp4
 
 ## Key Features and Components
