@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
-import { SharedModule } from '../../shared/shared.module';
-import { FeedCardComponent } from './feed-card/feed-card.component';
-import { FeedListComponent } from './feed-list/feed-list.component';
+import { SharedModule } from '../shared/shared.module';
+import { FeedCardComponent } from './components/feed-card/feed-card.component';
+import { FeedListComponent } from './components/feed-list/feed-list.component';
 import { ArtistNamesPipe } from './pipes/artist-names.pipe';
 import { ArtistImagePipe } from './pipes/artist-image.pipe';
 import { CardOffsetPipe } from './pipes/card-offset.pipe';

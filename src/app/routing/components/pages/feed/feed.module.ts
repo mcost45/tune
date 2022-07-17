@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 
 import { SharedModule } from '../../../../shared/shared.module';
-import { FeedModule } from '../../../../feed/components/feed.module';
+import { FeedModule } from '../../../../feed/feed.module';
 import { FeedPageRoutingModule } from './feed-routing.module';
 
 import { FeedPage } from './feed.page';

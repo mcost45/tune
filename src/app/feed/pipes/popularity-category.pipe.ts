@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { ConfigService } from '../../../shared/services/utility/config.service';
+import { ConfigService } from '../../shared/services/utility/config.service';
 
 @Pipe({
 	name: 'popularityCategory'

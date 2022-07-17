@@ -35,8 +35,8 @@ import { AudioService } from '../../services/audio.service';
 import { AppTitleStrategyService } from '../../../routing/app-title-strategy.service';
 import { waitFrame } from '../../../utility/wait-frame';
 import { waitTime } from '../../../utility/wait-time';
-import { ArtistNamesPipe } from '../pipes/artist-names.pipe';
 import { CommaJoinPipe } from '../../../shared/pipes/comma-join.pipe';
+import { ArtistNamesPipe } from '../../pipes/artist-names.pipe';
 
 @Component({
 	selector: 'app-feed-list',

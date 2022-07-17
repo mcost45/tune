@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { mapRange } from '../../../utility/map-range';
+import { mapRange } from '../../utility/map-range';
 
 @Pipe({
 	name: 'cardOffset'
